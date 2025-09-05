@@ -1,5 +1,8 @@
 package com.jpigeon.ridebattlelib;
 
+import com.jpigeon.ridebattlelib.core.system.henshin.RiderRegistry;
+import com.jpigeon.ridebattlelib.example.ExampleBasic;
+import com.jpigeon.ridebattlelib.example.ExampleDynamicForm;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -10,22 +13,23 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
-// This class will not load on dedicated servers. Accessing client side code from here is safe.
 @Mod(value = RideBattleLib.MODID, dist = Dist.CLIENT)
-// You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
 @EventBusSubscriber(modid = RideBattleLib.MODID, value = Dist.CLIENT)
 public class RideBattleLibClient {
     public RideBattleLibClient(ModContainer container) {
-        // Allows NeoForge to create a config screen for this mod's configs.
-        // The config screen is accessed by going to the Mods screen > clicking on your mod > clicking on config.
-        // Do not forget to add translations for your config options to the en_us.json file.
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
     }
 
     @SubscribeEvent
-    static void onClientSetup(FMLClientSetupEvent event) {
-        // Some client setup code
-        RideBattleLib.LOGGER.info("HELLO FROM CLIENT SETUP");
-        RideBattleLib.LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
+    public static void onClientSetup(FMLClientSetupEvent event) {
+        RideBattleLib.LOGGER.info("请确保骑士初始化在ClientSetup中哦~");
+        //ExampleBasic.init();
+        //ExampleDynamicForm.init();
+
+        event.enqueueWork(() -> RiderRegistry.getRegisteredRiders().forEach(config -> {
+            if (config.getDriverItem() == null) {
+                RideBattleLib.LOGGER.error("骑士 {} 未设置驱动器物品!", config.getRiderId());
+            }
+        }));
     }
 }

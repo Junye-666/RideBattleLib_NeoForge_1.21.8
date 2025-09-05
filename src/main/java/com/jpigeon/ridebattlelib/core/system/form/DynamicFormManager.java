@@ -13,24 +13,27 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class DynamicFormManager {
-    private static final Map<ResourceLocation, FormConfig> DYNAMIC_FORMS = new HashMap<>();
-    private static final Map<ResourceLocation, Long> LAST_USED = new HashMap<>();
+    private static final int MAX_DYNAMIC_FORMS = 1000; // 设置最大缓存数量
     private static final long UNLOAD_DELAY = 10 * 60 * 1000; // 10分钟未使用则卸载
+
+    private static final Map<ResourceLocation, FormConfig> DYNAMIC_FORMS = new LinkedHashMap<>(16, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<ResourceLocation, FormConfig> eldest) {
+            return size() > MAX_DYNAMIC_FORMS;
+        }
+    };
+    private static final Map<ResourceLocation, Long> LAST_USED = new HashMap<>();
 
     public static void cleanupUnusedForms() {
         long now = System.currentTimeMillis();
-        Iterator<Map.Entry<ResourceLocation, FormConfig>> it = DYNAMIC_FORMS.entrySet().iterator();
-
-        while (it.hasNext()) {
-            Map.Entry<ResourceLocation, FormConfig> entry = it.next();
+        DYNAMIC_FORMS.entrySet().removeIf(entry -> {
             long lastUsed = LAST_USED.getOrDefault(entry.getKey(), 0L);
-
-            if (now - lastUsed > UNLOAD_DELAY) {
-                RideBattleLib.LOGGER.info("卸载动态形态: {}", entry.getKey());
-                it.remove();
+            boolean shouldRemove = now - lastUsed > UNLOAD_DELAY;
+            if (shouldRemove) {
                 LAST_USED.remove(entry.getKey());
             }
-        }
+            return shouldRemove;
+        });
     }
 
     public static FormConfig getOrCreateDynamicForm(Player player, RiderConfig config, Map<ResourceLocation, ItemStack> beltItems) {

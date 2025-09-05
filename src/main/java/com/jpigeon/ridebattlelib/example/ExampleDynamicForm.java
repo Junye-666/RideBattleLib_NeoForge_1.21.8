@@ -44,7 +44,8 @@ public class ExampleDynamicForm {
                         List.of(Items.REDSTONE, Items.GLOWSTONE_DUST),
                         true,
                         false)
-                .setCommonArmor(EquipmentSlot.FEET, Items.LEATHER_BOOTS);
+                .setCommonArmor(EquipmentSlot.FEET, Items.LEATHER_BOOTS)
+                .setAllowDynamicForms(true);
 
         FormConfig baseForm = new FormConfig(BETA_BASE_FORM)
                 .setTriggerType(TriggerType.KEY)
