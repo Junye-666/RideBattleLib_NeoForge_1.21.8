@@ -1,13 +1,7 @@
 {
-  "itemGroup.ridebattlelib": "Example Mod Tab",
-  "block.ridebattlelib.example_block": "Example Block",
-  "item.ridebattlelib.example_item": "Example Item",
-
-  "ridebattlelib.configuration.title": "RideBattleLib Configs",
-  "ridebattlelib.configuration.section.ridebattlelib.common.toml": "RideBattleLib Configs",
-  "ridebattlelib.configuration.section.ridebattlelib.common.toml.title": "RideBattleLib Configs",
-  "ridebattlelib.configuration.items": "Item List",
-  "ridebattlelib.configuration.logDirtBlock": "Log Dirt Block",
-  "ridebattlelib.configuration.magicNumberIntroduction": "Magic Number Text",
-  "ridebattlelib.configuration.magicNumber": "Magic Number"
+  "category.ridebattlelib": "RideBattle",
+  "key.ridebattlelib.unhenshin": "UnHenshin",
+  "key.ridebattlelib.driver_activate": "Activate Driver",
+  "key.ridebattlelib.return_items": "Return Driver Items",
+  "key.ridebattlelib.skill": "Skill"
 }

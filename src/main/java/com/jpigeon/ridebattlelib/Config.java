@@ -1,42 +1,51 @@
 package com.jpigeon.ridebattlelib;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-// An example config class. This is not required, but it's a good idea to have one to keep your config organized.
-// Demonstrates how to use Neo's config APIs
-public class Config {
+
+@EventBusSubscriber(modid = RideBattleLib.MODID)
+public class Config
+{
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+    public static final ModConfigSpec.IntValue PENALTY_THRESHOLD;
+    public static final ModConfigSpec.IntValue COOLDOWN_DURATION;
+    public static final ModConfigSpec.IntValue EXPLOSION_POWER;
+    public static final ModConfigSpec.IntValue HENSHIN_COOLDOWN;
 
-    public static final ModConfigSpec.BooleanValue LOG_DIRT_BLOCK = BUILDER
-            .comment("Whether to log the dirt block on common setup")
-            .define("logDirtBlock", true);
+    static {
+        // 惩罚触发阈值（默认3次）
+        PENALTY_THRESHOLD = BUILDER
+                .comment("触发吃瘪生命阈值")
+                .defineInRange("penaltyThreshold", 3, 1, 10);
 
-    public static final ModConfigSpec.IntValue MAGIC_NUMBER = BUILDER
-            .comment("A magic number")
-            .defineInRange("magicNumber", 42, 0, Integer.MAX_VALUE);
+        // 冷却时间（秒，默认30秒）
+        COOLDOWN_DURATION = BUILDER
+                .comment("冷却(秒)")
+                .defineInRange("cooldownDuration", 60, 5, 300);
 
-    public static final ModConfigSpec.ConfigValue<String> MAGIC_NUMBER_INTRODUCTION = BUILDER
-            .comment("What you want the introduction message to be for the magic number")
-            .define("magicNumberIntroduction", "The magic number is... ");
+        // 爆炸威力（默认2.0）
+        EXPLOSION_POWER = BUILDER
+                .comment("吃瘪触发时爆炸强度 (为0时取消)")
+                .defineInRange("explosionPower", 2, 0, 10);
 
-    // a list of strings that are treated as resource locations for items
-    public static final ModConfigSpec.ConfigValue<List<? extends String>> ITEM_STRINGS = BUILDER
-            .comment("A list of items to log on common setup.")
-            .defineListAllowEmpty("items", List.of("minecraft:iron_ingot"), () -> "", Config::validateItemName);
+        HENSHIN_COOLDOWN = BUILDER
+                .comment("距离下次变身的冷却时长(秒)")
+                        .defineInRange("henshinCoolDown", 0, 0, 300);
+        BUILDER.build();
+    }
 
     static final ModConfigSpec SPEC = BUILDER.build();
 
-    private static boolean validateItemName(final Object obj) {
-        return obj instanceof String itemName && BuiltInRegistries.ITEM.containsKey(ResourceLocation.parse(itemName));
+    @SubscribeEvent
+    static void onLoad(final ModConfigEvent event)
+    {
+        RideBattleLib.LOGGER.info("Loaded config: penaltyThreshold={}, cooldown={}s, explosionPower={}",
+                PENALTY_THRESHOLD.get(),
+                COOLDOWN_DURATION.get(),
+                EXPLOSION_POWER.get());
     }
 }
