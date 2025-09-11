@@ -7,6 +7,7 @@ import com.jpigeon.ridebattlelib.core.system.attachment.RiderAttachments;
 import com.jpigeon.ridebattlelib.core.system.attachment.RiderData;
 import com.jpigeon.ridebattlelib.core.system.event.PenaltyEvent;
 import com.jpigeon.ridebattlelib.core.system.henshin.HenshinSystem;
+import io.netty.handler.logging.LogLevel;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -44,8 +45,11 @@ public class PenaltySystem implements IPenaltySystem {
         return Config.EXPLOSION_POWER.get().floatValue();
     }
 
+    public int getKnockBackStrength() {
+        return Config.KNOCKBACK_STRENGTH.get();
+    }
+
     public static boolean shouldTriggerPenalty(Player player) {
-        if (!Config.PENALTY_ENABLED.get()) return false;
         PenaltySystem instance = getInstance();
         return HenshinSystem.INSTANCE.isTransformed(player) &&
                 player.getHealth() <= instance.getPenaltyThreshold() &&
@@ -59,10 +63,10 @@ public class PenaltySystem implements IPenaltySystem {
         // 强制解除变身
         HenshinSystem.INSTANCE.unHenshin(player);
 
-        // 创建爆炸效果
+        // 爆炸
         PenaltyEvent.Particle explosion = new PenaltyEvent.Particle(player);
         NeoForge.EVENT_BUS.post(explosion);
-        if (!explosion.isCanceled()){
+        if (!explosion.isCanceled()) {
             player.level().explode(player,
                     player.getX(), player.getY() + 0.5, player.getZ(),
                     getExplosionPower(),
@@ -77,21 +81,21 @@ public class PenaltySystem implements IPenaltySystem {
             if (!player.level().isClientSide()) {
                 player.level().playSound(
                         player,
-                        player.getX(), player.getY(), player.getZ(), // 精确坐标版本
+                        player.getX(), player.getY(), player.getZ(),
                         SoundEvents.GENERIC_EXPLODE.value(),
                         SoundSource.PLAYERS,
                         1.0F,
-                        1.0F + player.level().random.nextFloat() * 0.2F // 随机音高变化
+                        1.0F + player.level().random.nextFloat() * 0.2F
                 );
             }
         }
 
-        // 击飞玩家
-        Vec3 knockBack = player.getLookAngle().reverse().scale(1.5).add(0, 1.0, 0);
+        // 击飞
+        Vec3 knockBack = player.getLookAngle().reverse().scale(getKnockBackStrength()).add(0, 1.0, 0);
         player.setDeltaMovement(knockBack);
         player.hurtMarked = true;
 
-        // 添加保护效果
+        // 保护效果
         player.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 100, 4));
         player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 100, 1));
         player.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 100, 0));
@@ -116,15 +120,15 @@ public class PenaltySystem implements IPenaltySystem {
         int cooldown = getCooldownDuration();
         player.addEffect(new MobEffectInstance(
                 MobEffects.SLOWNESS,
-                cooldown * 20,  // 秒转tick
+                cooldown * 20,
                 0,
                 false,
                 true
         ));
 
         Random random = new Random();
-        int chance =  random.nextInt(100);
-        if (chance < 10){
+        int chance = random.nextInt(100);
+        if (chance < 10) {
             player.displayClientMessage(
                     Component.literal("我的身体已经菠萝菠萝哒!")
                             .withStyle(ChatFormatting.RED),
@@ -137,8 +141,9 @@ public class PenaltySystem implements IPenaltySystem {
                     true
             );
         }
-
-        RideBattleLib.LOGGER.info("玩家 {} 触发吃瘪系统", player.getName().getString());
+        if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+            RideBattleLib.LOGGER.debug("玩家 {} 触发吃瘪系统", player.getName().getString());
+        }
     }
 
     @Override

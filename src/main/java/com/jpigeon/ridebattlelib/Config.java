@@ -1,6 +1,7 @@
 package com.jpigeon.ridebattlelib;
 
 
+import io.netty.handler.logging.LogLevel;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.config.ModConfigEvent;
@@ -11,15 +12,20 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public class Config
 {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+
+    public static final ModConfigSpec.EnumValue<LogLevel> LOG_LEVEL;
     public static final ModConfigSpec.BooleanValue PENALTY_ENABLED;
     public static final ModConfigSpec.IntValue PENALTY_THRESHOLD;
     public static final ModConfigSpec.IntValue COOLDOWN_DURATION;
     public static final ModConfigSpec.IntValue EXPLOSION_POWER;
+    public static final ModConfigSpec.IntValue KNOCKBACK_STRENGTH;
 
 
     static {
+        LOG_LEVEL = BUILDER
+                .defineEnum("logLevel", LogLevel.INFO);
+
         PENALTY_ENABLED = BUILDER
-                .comment("是否启用吃瘪")
                 .define("penaltyEnabled", true);
 
         // 惩罚触发阈值（默认3次）
@@ -37,6 +43,10 @@ public class Config
                 .comment("吃瘪触发时爆炸强度 (为0时取消)")
                 .defineInRange("explosionPower", 2, 0, 10);
 
+        KNOCKBACK_STRENGTH = BUILDER
+                .comment("吃瘪触发时击退强度")
+                .defineInRange("knockbackStrength", (int) 1.5, 0, 20);
+
         BUILDER.build();
     }
 
@@ -45,10 +55,12 @@ public class Config
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event)
     {
-        RideBattleLib.LOGGER.info("Loaded config: penaltyEnabled={}, penaltyThreshold={}, cooldown={}s, explosionPower={}",
+        RideBattleLib.LOGGER.debug("Loaded config: logLevel={}, penaltyEnabled={}, penaltyThreshold={}, cooldown={}s, explosionPower={}, knockbackStrength={}",
+                LOG_LEVEL.get(),
                 PENALTY_ENABLED.get(),
                 PENALTY_THRESHOLD.get(),
                 COOLDOWN_DURATION.get(),
-                EXPLOSION_POWER.get());
+                EXPLOSION_POWER.get(),
+                KNOCKBACK_STRENGTH.get());
     }
 }

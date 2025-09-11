@@ -10,21 +10,21 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public record HenshinPacket(UUID playerId, ResourceLocation riderId) implements CustomPacketPayload {
+public record TriggerSkillPacket(UUID playerId) implements CustomPacketPayload {
     public static final ResourceLocation ID =
-            ResourceLocation.fromNamespaceAndPath(RideBattleLib.MODID, "henshin");
+            ResourceLocation.fromNamespaceAndPath(RideBattleLib.MODID, "trigger_skill");
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, HenshinPacket> STREAM_CODEC =
+    public static final Type<TriggerSkillPacket> TYPE = new Type<>(ID);
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, TriggerSkillPacket> STREAM_CODEC =
             StreamCodec.composite(
                     UUIDStreamCodec.INSTANCE,
-                    HenshinPacket::playerId,
-                    ResourceLocation.STREAM_CODEC,
-                    HenshinPacket::riderId,
-                    HenshinPacket::new
+                    TriggerSkillPacket::playerId,
+                    TriggerSkillPacket::new
             );
 
-    public static final Type<HenshinPacket> TYPE = new Type<>(ID);
-
     @Override
-    public @NotNull Type<?> type() { return TYPE; }
+    public @NotNull Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
 }

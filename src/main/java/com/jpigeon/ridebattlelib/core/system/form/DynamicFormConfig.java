@@ -1,7 +1,9 @@
 package com.jpigeon.ridebattlelib.core.system.form;
 
+import com.jpigeon.ridebattlelib.Config;
 import com.jpigeon.ridebattlelib.RideBattleLib;
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderConfig;
+import io.netty.handler.logging.LogLevel;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
@@ -16,12 +18,12 @@ import java.util.Map;
 import java.util.Set;
 
 public class DynamicFormConfig extends FormConfig {
-    private final Map<ResourceLocation, ItemStack> beltSnapshot;
+    private final Map<ResourceLocation, ItemStack> driverSnapshot;
     private boolean shouldPause = false; // 新增字段
 
-    public DynamicFormConfig(ResourceLocation formId, Map<ResourceLocation, ItemStack> beltItems, RiderConfig config) {
+    public DynamicFormConfig(ResourceLocation formId, Map<ResourceLocation, ItemStack> driverItems, RiderConfig config) {
         super(formId);
-        this.beltSnapshot = new HashMap<>(beltItems);
+        this.driverSnapshot = new HashMap<>(driverItems);
         configureFromItems(config);
     }
 
@@ -35,7 +37,7 @@ public class DynamicFormConfig extends FormConfig {
         };
         Set<EquipmentSlot> usedSlots = new HashSet<>();
 
-        for (Map.Entry<ResourceLocation, ItemStack> entry : beltSnapshot.entrySet()) {
+        for (Map.Entry<ResourceLocation, ItemStack> entry : driverSnapshot.entrySet()) {
             if (slotIndex >= armorSlots.length) break;
 
             ItemStack stack = entry.getValue();
@@ -68,12 +70,14 @@ public class DynamicFormConfig extends FormConfig {
                         case LEGS -> setLeggings(commonArmor);
                         case FEET -> setBoots(commonArmor);
                     }
-                    RideBattleLib.LOGGER.debug("为槽位 {} 设置底衣: {}", slot, commonArmor);
+                    if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+                        RideBattleLib.LOGGER.debug("为槽位 {} 设置底衣: {}", slot, commonArmor);
+                    }
                 }
             }
         }
 
-        for (Map.Entry<ResourceLocation, ItemStack> entry : beltSnapshot.entrySet()) {
+        for (Map.Entry<ResourceLocation, ItemStack> entry : driverSnapshot.entrySet()) {
             ItemStack stack = entry.getValue();
             if (!stack.isEmpty()) {
                 Item item = stack.getItem();

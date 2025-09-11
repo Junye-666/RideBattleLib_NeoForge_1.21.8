@@ -6,7 +6,7 @@ import com.jpigeon.ridebattlelib.api.IHenshinSystem;
 import com.jpigeon.ridebattlelib.core.system.attachment.RiderAttachments;
 import com.jpigeon.ridebattlelib.core.system.attachment.RiderData;
 import com.jpigeon.ridebattlelib.core.system.attachment.TransformedAttachmentData;
-import com.jpigeon.ridebattlelib.core.system.belt.BeltSystem;
+import com.jpigeon.ridebattlelib.core.system.driver.DriverSystem;
 import com.jpigeon.ridebattlelib.core.system.event.DriverActivationEvent;
 import com.jpigeon.ridebattlelib.core.system.event.UnhenshinEvent;
 import com.jpigeon.ridebattlelib.core.system.form.DynamicFormManager;
@@ -17,6 +17,7 @@ import com.jpigeon.ridebattlelib.core.system.network.packet.HenshinStateSyncPack
 import com.jpigeon.ridebattlelib.core.system.network.packet.SyncHenshinStatePacket;
 import com.jpigeon.ridebattlelib.core.system.network.packet.TransformedStatePacket;
 import com.jpigeon.ridebattlelib.core.system.penalty.PenaltySystem;
+import io.netty.handler.logging.LogLevel;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -46,7 +47,7 @@ public class HenshinSystem implements IHenshinSystem {
             RiderConfig config,
             ResourceLocation formId,
             Map<EquipmentSlot, ItemStack> originalGear,
-            Map<ResourceLocation, ItemStack> beltSnapshot
+            Map<ResourceLocation, ItemStack> driverSnapshot
     ) {
     }
 
@@ -54,8 +55,8 @@ public class HenshinSystem implements IHenshinSystem {
     public void driverAction(Player player) {
         RiderConfig config = RiderConfig.findActiveDriverConfig(player);
         if (config == null) return;
-        Map<ResourceLocation, ItemStack> beltItems = BeltSystem.INSTANCE.getBeltItems(player);
-        ResourceLocation formId = config.matchForm(player, beltItems);
+        Map<ResourceLocation, ItemStack> driverItems = DriverSystem.INSTANCE.getDriverItems(player);
+        ResourceLocation formId = config.matchForm(player, driverItems);
         if (formId == null) return;
         FormConfig formConfig = config.getActiveFormConfig(player);
         if (formConfig == null) return;
@@ -96,24 +97,26 @@ public class HenshinSystem implements IHenshinSystem {
         RiderConfig config = RiderRegistry.getRider(riderId);
         if (config == null) return false;
 
-        Map<ResourceLocation, ItemStack> beltItems = BeltSystem.INSTANCE.getBeltItems(player);
+        Map<ResourceLocation, ItemStack> driverItems = DriverSystem.INSTANCE.getDriverItems(player);
 
         // 如果没有装备辅助驱动器，则移除所有辅助槽位
         if (!config.hasAuxDriverEquipped(player)) {
-            beltItems = new HashMap<>(beltItems);
-            beltItems.keySet().removeAll(config.getAuxSlotDefinitions().keySet());
+            driverItems = new HashMap<>(driverItems);
+            driverItems.keySet().removeAll(config.getAuxSlotDefinitions().keySet());
         }
 
-        ResourceLocation formId = config.matchForm(player, beltItems);
+        ResourceLocation formId = config.matchForm(player, driverItems);
         if (!canHenshin(player) || formId == null) return false;
 
         FormConfig formConfig = RiderRegistry.getForm(formId);
 
         // 如果是动态形态（不在预设注册表中）
         if (formConfig == null) {
-            RideBattleLib.LOGGER.debug("形态 {} 未注册，尝试作为动态形态处理", formId);
+            if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+                RideBattleLib.LOGGER.debug("形态 {} 未注册，尝试作为动态形态处理", formId);
+            }
             formConfig = DynamicFormManager.getOrCreateDynamicForm(
-                    player, config, beltItems
+                    player, config, driverItems
             );
 
             // 确保formId一致性
@@ -146,7 +149,7 @@ public class HenshinSystem implements IHenshinSystem {
             boolean isPenalty = player.getHealth() <= Config.PENALTY_THRESHOLD.get();
 
             // 清除效果
-            EffectAndAttributeManager.INSTANCE.removeAttributesAndEffects(player, data.formId() );
+            EffectAndAttributeManager.INSTANCE.removeAttributesAndEffects(player, data.formId());
 
             // 恢复装备
             ArmorManager.INSTANCE.restoreOriginalGear(player, data);
@@ -156,7 +159,7 @@ public class HenshinSystem implements IHenshinSystem {
 
             // 数据清理
             HenshinHelper.INSTANCE.removeTransformed(player);
-            BeltSystem.INSTANCE.returnItems(player);
+            DriverSystem.INSTANCE.returnItems(player);
 
             if (isPenalty) {
                 // 播放特殊解除音效
@@ -175,6 +178,7 @@ public class HenshinSystem implements IHenshinSystem {
             //事件触发
             UnhenshinEvent.Post postUnHenshin = new UnhenshinEvent.Post(player);
             NeoForge.EVENT_BUS.post(postUnHenshin);
+            RideBattleLib.LOGGER.info("玩家 {} 解除变身", player.getName().getString());
         }
     }
 
@@ -190,11 +194,11 @@ public class HenshinSystem implements IHenshinSystem {
         if (config == null) return;
 
         // 确保只在装备了辅助驱动器时才匹配辅助槽位
-        Map<ResourceLocation, ItemStack> beltItems = BeltSystem.INSTANCE.getBeltItems(player);
+        Map<ResourceLocation, ItemStack> driverItems = DriverSystem.INSTANCE.getDriverItems(player);
         if (!config.hasAuxDriverEquipped(player)) {
             // 过滤掉辅助槽位
-            beltItems = new HashMap<>(beltItems);
-            beltItems.keySet().removeAll(config.getAuxSlotDefinitions().keySet());
+            driverItems = new HashMap<>(driverItems);
+            driverItems.keySet().removeAll(config.getAuxSlotDefinitions().keySet());
         }
 
         HenshinHelper.INSTANCE.performFormSwitch(player, newFormId);
@@ -229,8 +233,8 @@ public class HenshinSystem implements IHenshinSystem {
 
         // 创建新数据副本
         RiderData newData = new RiderData(
-                new HashMap<>(oldData.mainBeltItems),
-                new HashMap<>(oldData.auxBeltItems),
+                new HashMap<>(oldData.mainDriverItems),
+                new HashMap<>(oldData.auxDriverItems),
                 oldData.getTransformedData(),  // 保留现有变身数据
                 state,                         // 新状态
                 formId,                        // 新待处理形态
@@ -245,9 +249,10 @@ public class HenshinSystem implements IHenshinSystem {
             syncHenshinState(serverPlayer);
         }
 
-        // 调试日志
-        RideBattleLib.LOGGER.info("状态变更: {} -> {} (形态: {})",
-                oldData.getHenshinState(), state, formId);
+        if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+            RideBattleLib.LOGGER.debug("状态变更: {} -> {} (形态: {})",
+                    oldData.getHenshinState(), state, formId);
+        }
     }
 
     //====================网络通信====================
@@ -255,8 +260,10 @@ public class HenshinSystem implements IHenshinSystem {
     public static void syncHenshinState(ServerPlayer player) {
         RiderData data = player.getData(RiderAttachments.RIDER_DATA);
 
-        RideBattleLib.LOGGER.info("同步变身状态: player={}, state={}, pendingForm={}",
-                player.getName().getString(), data.getHenshinState(), data.getPendingFormId());
+        if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+            RideBattleLib.LOGGER.debug("同步变身状态: player={}, state={}, pendingForm={}",
+                    player.getName().getString(), data.getHenshinState(), data.getPendingFormId());
+        }
 
         PacketHandler.sendToClient(player, new HenshinStateSyncPacket(
                 player.getUUID(),
@@ -284,7 +291,7 @@ public class HenshinSystem implements IHenshinSystem {
                 config,
                 attachmentData.formId(),
                 attachmentData.originalGear(),
-                attachmentData.beltSnapshot()
+                attachmentData.driverSnapshot()
         );
     }
 }

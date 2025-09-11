@@ -3,7 +3,6 @@ package com.jpigeon.ridebattlelib.core.system.attachment;
 import com.jpigeon.ridebattlelib.RideBattleLib;
 import com.jpigeon.ridebattlelib.core.system.henshin.helper.HenshinState;
 import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.attachment.IAttachmentSerializer;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
@@ -11,11 +10,11 @@ import java.util.HashMap;
 import java.util.function.Supplier;
 
 public class RiderAttachments {
-    public static final DeferredRegister<AttachmentType<?>> RIDER_ATTACHMENTS =
+    public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS =
             DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, RideBattleLib.MODID);
 
     public static final Supplier<AttachmentType<RiderData>> RIDER_DATA =
-            RIDER_ATTACHMENTS.register("rider_data",
+            ATTACHMENTS.register("rider_data",
                     () -> AttachmentType.builder(() -> new RiderData(
                             new HashMap<>(),
                                     new HashMap<>(),
@@ -25,6 +24,6 @@ public class RiderAttachments {
                                     0,
                                     0
                             ))
-                            .serialize(RiderData.CODEC.fieldOf("riderData"))
+                            .serialize(RiderData.CODEC.fieldOf("rider_data"))
                             .build());
 }

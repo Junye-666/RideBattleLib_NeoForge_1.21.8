@@ -1,9 +1,6 @@
 package com.jpigeon.ridebattlelib;
 
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderRegistry;
-import com.jpigeon.ridebattlelib.example.ExampleBasic;
-import com.jpigeon.ridebattlelib.example.ExampleDynamicForm;
-import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -23,8 +20,8 @@ public class RideBattleLibClient {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         RideBattleLib.LOGGER.info("请确保骑士初始化在ClientSetup中哦~");
-        //ExampleBasic.init();
-        //ExampleDynamicForm.init();
+        // ExampleBasic.init();
+        // ExampleDynamicForm.init();
 
         event.enqueueWork(() -> RiderRegistry.getRegisteredRiders().forEach(config -> {
             if (config.getDriverItem() == null) {
