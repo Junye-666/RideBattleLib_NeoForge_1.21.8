@@ -35,9 +35,8 @@ public final class HenshinHelper implements IHenshinHelper {
     @Override
     public void performHenshin(Player player, RiderConfig config, ResourceLocation formId) {
         if (config == null || formId == null) return;
-        Map<ResourceLocation, ItemStack> driverItems = DriverSystem.INSTANCE.getDriverItems(player);
 
-        // 保存原始装备
+        Map<ResourceLocation, ItemStack> driverItems = DriverSystem.INSTANCE.getDriverItems(player);
         Map<EquipmentSlot, ItemStack> originalGear = ARMOR.saveOriginalGear(player, config);
 
         // 获取形态配置（支持动态形态）
@@ -68,10 +67,10 @@ public final class HenshinHelper implements IHenshinHelper {
         }
 
         // 应用属性和效果
-        EFFECT_ATTRIBUTE.applyAttributesAndEffects(player, formConfig );
+        EFFECT_ATTRIBUTE.applyAttributesAndEffects(player, formConfig);
 
-        // 设置为已变身状态
-        setTransformed(player, config, formConfig.getFormId(), originalGear, driverItems);
+        // 保存变身快照
+        saveTransformedSnapshot(player, config, formConfig.getFormId(), originalGear, driverItems);
 
         // 触发后置事件
         HenshinEvent.Post postHenshin = new HenshinEvent.Post(player, config.getRiderId(), formId);
@@ -125,7 +124,6 @@ public final class HenshinHelper implements IHenshinHelper {
         }
     }
 
-    @Override
     public void restoreTransformedState(Player player, TransformedAttachmentData attachmentData) {
         RiderConfig config = RiderRegistry.getRider(attachmentData.riderId());
         FormConfig formConfig = RiderRegistry.getForm(attachmentData.formId());
@@ -151,7 +149,6 @@ public final class HenshinHelper implements IHenshinHelper {
         }
     }
 
-    @Override
     public void setTransformed(Player player, RiderConfig config, ResourceLocation formId, Map<EquipmentSlot, ItemStack> originalGear, Map<ResourceLocation, ItemStack> driverSnapshot) {
         if (config == null) return;
         RiderData oldData = player.getData(RiderAttachments.RIDER_DATA);
@@ -178,6 +175,67 @@ public final class HenshinHelper implements IHenshinHelper {
         );
 
         player.setData(RiderAttachments.RIDER_DATA, newData);
+    }
+
+    @Override
+    public void saveTransformedSnapshot(Player player, RiderConfig config, ResourceLocation formId,
+                                        Map<EquipmentSlot, ItemStack> originalGear,
+                                        Map<ResourceLocation, ItemStack> driverSnapshot) {
+        if (config == null) return;
+        RiderData oldData = player.getData(RiderAttachments.RIDER_DATA);
+
+        if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+            RideBattleLib.LOGGER.debug("保存变身快照 - 骑士: {}, 形态: {}", config.getRiderId(), formId);
+        }
+
+        TransformedAttachmentData transformedData = new TransformedAttachmentData(
+                config.getRiderId(),
+                formId,
+                originalGear,
+                driverSnapshot
+        );
+
+        RiderData newData = new RiderData(
+                new HashMap<>(oldData.mainDriverItems),
+                new HashMap<>(oldData.auxDriverItems),
+                transformedData,
+                oldData.getHenshinState(),
+                oldData.getPendingFormId(),
+                oldData.getPenaltyCooldownEnd(),
+                oldData.getCurrentSkillIndex()
+        );
+
+        player.setData(RiderAttachments.RIDER_DATA, newData);
+    }
+
+    @Override
+    public void restoreTransformedState(Player player, HenshinSystem.TransformedData data) {
+        if (data == null) return;
+
+        RiderConfig config = data.config();
+        FormConfig formConfig = RiderRegistry.getForm(data.formId());
+        if (formConfig == null) {
+            formConfig = DynamicFormConfig.getDynamicForm(data.formId());
+        }
+
+        if (config != null && formConfig != null) {
+            // 恢复原始装备
+            ARMOR.restoreOriginalGear(player, data);
+
+            // 重新装备盔甲
+            if (formConfig instanceof DynamicFormConfig) {
+                DynamicHenshinManager.applyDynamicArmor(player, (DynamicFormConfig) formConfig);
+            } else {
+                ARMOR.equipArmor(player, formConfig);
+            }
+
+            // 重新应用属性
+            EFFECT_ATTRIBUTE.applyAttributesAndEffects(player, formConfig);
+
+            // 保存恢复后的状态
+            saveTransformedSnapshot(player, config, data.formId(),
+                    data.originalGear(), data.driverSnapshot());
+        }
     }
 
     @Override

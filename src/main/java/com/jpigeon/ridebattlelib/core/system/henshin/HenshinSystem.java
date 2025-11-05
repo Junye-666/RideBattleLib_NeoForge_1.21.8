@@ -14,9 +14,7 @@ import com.jpigeon.ridebattlelib.core.system.form.DynamicFormConfig;
 import com.jpigeon.ridebattlelib.core.system.form.FormConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.helper.*;
 import com.jpigeon.ridebattlelib.core.system.network.handler.PacketHandler;
-import com.jpigeon.ridebattlelib.core.system.network.packet.HenshinStateSyncPacket;
 import com.jpigeon.ridebattlelib.core.system.network.packet.SyncHenshinStatePacket;
-import com.jpigeon.ridebattlelib.core.system.network.packet.TransformedStatePacket;
 import com.jpigeon.ridebattlelib.core.system.penalty.PenaltySystem;
 import io.netty.handler.logging.LogLevel;
 import net.minecraft.ChatFormatting;
@@ -77,7 +75,7 @@ public class HenshinSystem implements IHenshinSystem {
             ));
         } else if (player instanceof ServerPlayer serverPlayer) {
             // 服务端直接同步
-            HenshinSystem.syncHenshinState(serverPlayer);
+            SyncManager.INSTANCE.syncHenshinState(serverPlayer);
         }
 
         // 处理变身逻辑
@@ -137,7 +135,7 @@ public class HenshinSystem implements IHenshinSystem {
         transitionToState(player, HenshinState.TRANSFORMED, formId);
 
         if (player instanceof ServerPlayer serverPlayer) {
-            syncTransformedState(serverPlayer);
+            SyncManager.INSTANCE.syncTransformedState(serverPlayer);
         }
 
         return true;
@@ -174,7 +172,7 @@ public class HenshinSystem implements IHenshinSystem {
                         0.8F, 0.5F);
             }
             if (player instanceof ServerPlayer serverPlayer) {
-                syncTransformedState(serverPlayer);
+                SyncManager.INSTANCE.syncTransformedState(serverPlayer);
             }
 
             // 移除给予的物品
@@ -209,7 +207,7 @@ public class HenshinSystem implements IHenshinSystem {
 
         HenshinHelper.INSTANCE.performFormSwitch(player, newFormId);
         if (player instanceof ServerPlayer serverPlayer) {
-            syncTransformedState(serverPlayer);
+            SyncManager.INSTANCE.syncTransformedState(serverPlayer);
         }
     }
 
@@ -252,35 +250,13 @@ public class HenshinSystem implements IHenshinSystem {
         player.setData(RiderAttachments.RIDER_DATA, newData);
 
         if (player instanceof ServerPlayer serverPlayer) {
-            syncHenshinState(serverPlayer);
+            SyncManager.INSTANCE.syncHenshinState(serverPlayer);
         }
 
         if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
             RideBattleLib.LOGGER.debug("状态变更: {} -> {} (形态: {})",
                     oldData.getHenshinState(), state, formId);
         }
-    }
-
-    //====================网络通信====================
-
-    public static void syncHenshinState(ServerPlayer player) {
-        RiderData data = player.getData(RiderAttachments.RIDER_DATA);
-
-        if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
-            RideBattleLib.LOGGER.debug("同步变身状态: player={}, state={}, pendingForm={}",
-                    player.getName().getString(), data.getHenshinState(), data.getPendingFormId());
-        }
-
-        PacketHandler.sendToClient(player, new HenshinStateSyncPacket(
-                player.getUUID(),
-                data.getHenshinState(),
-                data.getPendingFormId()
-        ));
-    }
-
-    public static void syncTransformedState(ServerPlayer player) {
-        boolean isTransformed = INSTANCE.isTransformed(player);
-        PacketHandler.sendToClient(player, new TransformedStatePacket(player.getUUID(), isTransformed));
     }
 
     //====================Getter方法====================
