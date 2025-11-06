@@ -4,7 +4,6 @@ import com.jpigeon.ridebattlelib.Config;
 import com.jpigeon.ridebattlelib.RideBattleLib;
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.helper.TriggerType;
-import io.netty.handler.logging.LogLevel;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -238,7 +237,7 @@ public class DynamicFormConfig extends FormConfig {
                                                     Map<ResourceLocation, ItemStack> driverItems) {
         ResourceLocation formId = generateFormId(config.getRiderId(), driverItems);
 
-        if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+        if (Config.DEBUG_MODE.get()) {
             RideBattleLib.LOGGER.debug("创建动态形态: {}", formId);
             RideBattleLib.LOGGER.debug("槽位内容: {}", driverItems.entrySet().stream()
                     .map(e -> e.getKey() + "=" + e.getValue().getItem())
@@ -325,7 +324,7 @@ public class DynamicFormConfig extends FormConfig {
                 long lastUsed = LAST_USED.getOrDefault(entry.getKey(), 0L);
 
                 if (now - lastUsed > UNLOAD_DELAY) {
-                    if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+                    if (Config.DEBUG_MODE.get()) {
                         RideBattleLib.LOGGER.debug("卸载动态形态: {}", entry.getKey());
                     }
                     it.remove();
@@ -334,7 +333,7 @@ public class DynamicFormConfig extends FormConfig {
                 }
             }
 
-            if (removedCount > 0 && Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+            if (removedCount > 0 && Config.DEBUG_MODE.get()) {
                 RideBattleLib.LOGGER.debug("清理了 {} 个未使用的动态形态", removedCount);
             }
         }
@@ -376,7 +375,7 @@ public class DynamicFormConfig extends FormConfig {
             if (!stack.isEmpty()) {
                 Item item = stack.getItem();
 
-                if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+                if (Config.DEBUG_MODE.get()) {
                     RideBattleLib.LOGGER.debug("处理槽位 {} 的物品: {}", slotId, item);
                 }
 
@@ -387,23 +386,23 @@ public class DynamicFormConfig extends FormConfig {
                     usedSlots.add(armorSlot);
                     Item armorItem = getArmorForItem(item, armorSlot);
 
-                    if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+                    if (Config.DEBUG_MODE.get()) {
                         RideBattleLib.LOGGER.debug("槽位 {} 自动映射到盔甲槽位: {}, 盔甲物品: {}",
                                 slotId, armorSlot, armorItem);
                     }
 
                     if (armorItem != Items.AIR) {
                         setArmorForSlot(armorSlot, armorItem);
-                        if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+                        if (Config.DEBUG_MODE.get()) {
                             RideBattleLib.LOGGER.debug("已设置盔甲槽位 {} 为 {}", armorSlot, armorItem);
                         }
                     } else {
-                        if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+                        if (Config.DEBUG_MODE.get()) {
                             RideBattleLib.LOGGER.debug("未找到物品 {} 在槽位 {} 的盔甲映射", item, armorSlot);
                         }
                     }
                 } else {
-                    if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+                    if (Config.DEBUG_MODE.get()) {
                         RideBattleLib.LOGGER.debug("无法为槽位 {} 的物品 {} 确定盔甲槽位", slotId, item);
                     }
                 }
@@ -423,7 +422,7 @@ public class DynamicFormConfig extends FormConfig {
         // 填充未使用的槽位与底衣
         fillUnusedSlots(config, usedSlots);
 
-        if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+        if (Config.DEBUG_MODE.get()) {
             RideBattleLib.LOGGER.debug("动态形态配置完成 - 头盔: {}, 胸甲: {}, 护腿: {}, 靴子: {}",
                     getHelmet(), getChestplate(), getLeggings(), getBoots());
             RideBattleLib.LOGGER.debug("动态属性数量: {}, 动态效果数量: {}, 动态授予物品数量: {}",
@@ -490,7 +489,7 @@ public class DynamicFormConfig extends FormConfig {
                 Item undersuitItem = undersuit.get(slot);
                 if (undersuitItem != null && undersuitItem != Items.AIR) {
                     setArmorForSlot(slot, undersuitItem); // 这里填充底衣
-                    if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+                    if (Config.DEBUG_MODE.get()) {
                         RideBattleLib.LOGGER.debug("为未使用槽位 {} 填充底衣: {}", slot, undersuitItem);
                     }
                 }

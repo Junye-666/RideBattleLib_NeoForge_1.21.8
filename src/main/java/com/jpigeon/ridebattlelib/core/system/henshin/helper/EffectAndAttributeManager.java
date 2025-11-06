@@ -5,7 +5,6 @@ import com.jpigeon.ridebattlelib.RideBattleLib;
 import com.jpigeon.ridebattlelib.core.system.form.DynamicFormConfig;
 import com.jpigeon.ridebattlelib.core.system.form.FormConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderRegistry;
-import io.netty.handler.logging.LogLevel;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -96,9 +95,24 @@ public class EffectAndAttributeManager {
 
     // 属性移除
     private void removeAttributes(Player player, ResourceLocation formId) {
-
         FormConfig formConfig = RiderRegistry.getForm(formId);
-        if (formConfig == null) return;
+
+        // 添加动态形态支持
+        if (formConfig == null) {
+            formConfig = DynamicFormConfig.getDynamicForm(formId);
+        }
+
+        if (formConfig == null) {
+            if (Config.DEBUG_MODE.get()) {
+                RideBattleLib.LOGGER.debug("无法找到形态配置，无法移除属性: {}", formId);
+            }
+            return;
+        }
+
+        if (Config.DEBUG_MODE.get()) {
+            RideBattleLib.LOGGER.debug("移除形态属性 - 形态: {}, 属性数量: {}",
+                    formId, formConfig.getAttributes().size());
+        }
 
         // 移除属性修饰符
         Registry<Attribute> attributeRegistry = BuiltInRegistries.ATTRIBUTE;
@@ -111,11 +125,15 @@ public class EffectAndAttributeManager {
                 AttributeInstance instance = player.getAttribute(holder);
                 if (instance != null) {
                     instance.removeModifier(modifier.id());
+                    if (Config.DEBUG_MODE.get()) {
+                        RideBattleLib.LOGGER.debug("移除属性修饰符: {} -> {}", modifier.id(), holder.unwrapKey().map(ResourceKey::location).orElse(null));
+                    }
                 }
             }
         }
+
         // 记录并报告任何残留效果
-        if (Config.LOG_LEVEL.get().equals(LogLevel.DEBUG)) {
+        if (Config.DEBUG_MODE.get()) {
             for (Holder<MobEffect> activeEffect : player.getActiveEffectsMap().keySet()) {
                 activeEffect.unwrapKey().ifPresent(key ->
                         RideBattleLib.LOGGER.debug("移除残留效果: {}", key.location()));
