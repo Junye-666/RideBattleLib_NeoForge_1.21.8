@@ -24,10 +24,12 @@ public class ItemManager {
                 NeoForge.EVENT_BUS.post(preGrant);
                 if (preGrant.isCanceled()) return;
 
-                if (!player.addItem(preGrant.getStack().copy())) {
-                    player.drop(preGrant.getStack().copy(), false);
+                stack = preGrant.getStack();
 
-                    ItemGrantEvent.Post postGrant = new ItemGrantEvent.Post(player, preGrant.getStack().copy(), formConfig);
+                if (!player.addItem(stack.copy())) {
+                    player.drop(stack.copy(), false);
+
+                    ItemGrantEvent.Post postGrant = new ItemGrantEvent.Post(player, stack.copy(), formConfig);
                     NeoForge.EVENT_BUS.post(postGrant);
                 }
             }
