@@ -53,8 +53,7 @@ public class HenshinSystem implements IHenshinSystem {
         if (config == null) return;
         Map<ResourceLocation, ItemStack> driverItems = DriverSystem.INSTANCE.getDriverItems(player);
         TransformedData oldData = getTransformedData(player);
-        if (oldData == null) return;
-        ResourceLocation oldFormId = oldData.formId();
+        ResourceLocation oldFormId = oldData != null ? oldData.formId() : null;
         ResourceLocation formId = config.matchForm(player, driverItems);
         if (formId == null) return;
         FormConfig formConfig = config.getActiveFormConfig(player);
