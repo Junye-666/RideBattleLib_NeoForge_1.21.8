@@ -7,7 +7,6 @@ import com.jpigeon.ridebattlelib.core.system.event.HenshinEvent;
 import com.jpigeon.ridebattlelib.core.system.form.FormConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderRegistry;
-import com.jpigeon.ridebattlelib.core.system.henshin.helper.DriverActionManager;
 import com.jpigeon.ridebattlelib.core.system.henshin.helper.TriggerType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -160,7 +159,7 @@ public class ExampleBasic {
                 if (event.getFormId().equals(TEST_FORM_BASE)) {
                     RiderManager.scheduleSeconds(
                             2.21F,
-                            () -> DriverActionManager.INSTANCE.completeTransformation(player)
+                            () -> RiderManager.completeHenshin(player)
                     );
                 }
             }
