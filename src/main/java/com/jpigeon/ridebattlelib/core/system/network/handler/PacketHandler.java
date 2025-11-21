@@ -18,7 +18,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 public class PacketHandler {
     public static void register(final RegisterPayloadHandlersEvent event) {
         event.registrar(RideBattleLib.MODID)
-                .versioned("0.9.9.4")
+                .versioned("1，0")
                 .playToServer(DriverActionPacket.TYPE, DriverActionPacket.STREAM_CODEC,
                         (payload, context) -> {
                             Player targetPlayer = context.player().level().getPlayerByUUID(payload.playerId());
