@@ -50,13 +50,9 @@ public final class RiderManager {
      * @return 是否成功发起变身
      */
     public static boolean transform(Player player) {
-        RiderConfig config = RiderConfig.findActiveDriverConfig(player);
-        if (config != null) {
-            if (Config.DEVELOPER_MODE.get()) RideBattleLib.LOGGER.debug("尝试为玩家{}变身", player.getName().getString());
-            PacketHandler.sendToServer(new HenshinPacket(player.getUUID(), config.getRiderId()));
-            return true;
-        }
-        return false;
+        if (Config.DEVELOPER_MODE.get()) RideBattleLib.LOGGER.debug("尝试为玩家{}变身", player.getName().getString());
+        PacketHandler.sendToServer(new DriverActionPacket(player.getUUID()));
+        return true;
     }
 
     /**
@@ -81,7 +77,7 @@ public final class RiderManager {
      * @return 是否成功切换
      */
     public static boolean switchForm(Player player, ResourceLocation newFormId) {
-        if (!HenshinSystem.INSTANCE.isTransformed(player)) {
+        if (isTransformed(player) && getCurrentForm(player) != newFormId) {
             if (Config.DEVELOPER_MODE.get()) RideBattleLib.LOGGER.debug("尝试切换玩家{}形态{}", player.getName().getString(), newFormId);
             PacketHandler.sendToServer(new SwitchFormPacket(player.getUUID(), newFormId));
             return true;
@@ -101,6 +97,7 @@ public final class RiderManager {
 
     /**
      * 插入物品至驱动器
+     * 注意：此方法不触发AUTO变身
      */
     public static boolean insertItemToSlot(Player player, ResourceLocation slotId, ItemStack stack) {
         if (player.level().isClientSide) {
@@ -114,9 +111,17 @@ public final class RiderManager {
     }
 
     /**
+     * 快捷方法
+     */
+    public static boolean insertItemToSlot(Player player, ResourceLocation slotId, Item item){
+        return insertItemToSlot(player, slotId, item.getDefaultInstance());
+    }
+
+    /**
      * 将单个物品从驱动器中取出
      */
     public static void extractItemFromSlot(Player player, ResourceLocation slotId) {
+        if (getItemForSlot(player, slotId).isEmpty()) return;
         if (Config.DEVELOPER_MODE.get()) RideBattleLib.LOGGER.debug("为玩家{}从槽位{}取出物品", player.getName().getString(), slotId);
         PacketHandler.sendToServer(new ExtractItemPacket(player.getUUID(), slotId));
     }
@@ -549,16 +554,18 @@ public final class RiderManager {
      */
     public static void resetPlayerState(Player player) {
         if (isTransformed(player)) {
-            unTransform(player);
+            if (unTransform(player)) {
+                RiderData data = player.getData(RiderAttachments.RIDER_DATA);
+                data.setHenshinState(HenshinState.IDLE);
+                data.setPendingFormId(null);
+                data.setPenaltyCooldownEnd(0);
+                data.setCurrentSkillIndex(0);
+
+                player.removeTag("penalty_cooldown");
+                player.removeTag("just_respawned");
+            } else if (Config.DEVELOPER_MODE.get()) {
+                RideBattleLib.LOGGER.debug("重置玩家变身状态失败");
+            }
         }
-
-        RiderData data = player.getData(RiderAttachments.RIDER_DATA);
-        data.setHenshinState(HenshinState.IDLE);
-        data.setPendingFormId(null);
-        data.setPenaltyCooldownEnd(0);
-        data.setCurrentSkillIndex(0);
-
-        player.removeTag("penalty_cooldown");
-        player.removeTag("just_respawned");
     }
 }
