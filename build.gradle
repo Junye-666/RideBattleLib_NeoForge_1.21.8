@@ -185,3 +185,8 @@ idea {
         downloadJavadoc = true
     }
 }
+
+jar {
+    // 包含所有必要的类
+    from sourceSets.main.output
+}
