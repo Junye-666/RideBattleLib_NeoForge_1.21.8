@@ -273,7 +273,7 @@ public class DynamicFormConfig extends FormConfig {
     }
 
     private static void scheduleCleanupIfNeeded(Player player) {
-        MinecraftServer server = player.getServer();
+        MinecraftServer server = player.level().getServer();
         if (server != null && server.getTickCount() % 6000 == 0) { // 每5分钟检查一次
             server.execute(DynamicFormConfig::cleanupUnusedForms);
         }

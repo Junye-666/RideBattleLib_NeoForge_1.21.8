@@ -45,7 +45,7 @@ public class HenshinSystem implements IHenshinSystem {
 
     @Override
     public void driverAction(Player player) {
-        if (player.level().isClientSide) {
+        if (player.level().isClientSide()) {
             RideBattleLib.LOGGER.warn("driverAction 在客户端调用，应该通过数据包触发");
             return;
         }
@@ -68,7 +68,7 @@ public class HenshinSystem implements IHenshinSystem {
             data.setHenshinState(HenshinState.TRANSFORMING);
         }
         // 同步状态
-        if (player.level().isClientSide) {
+        if (player.level().isClientSide()) {
             // 客户端发送同步请求
             PacketHandler.sendToServer(new SyncHenshinStatePacket(
                     HenshinState.TRANSFORMING,
@@ -271,7 +271,7 @@ public class HenshinSystem implements IHenshinSystem {
     @Override
     public boolean isTransformed(Player player) {
         // 客户端检查缓存，服务端检查真实数据
-        if (player.level().isClientSide) {
+        if (player.level().isClientSide()) {
             return CLIENT_TRANSFORMED_CACHE.getOrDefault(player.getUUID(), false);
         }
         return player.getData(RiderAttachments.RIDER_DATA).getTransformedData() != null;
