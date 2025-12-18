@@ -5,6 +5,7 @@ import com.jpigeon.ridebattlelib.RideBattleLib;
 import com.jpigeon.ridebattlelib.core.system.attachment.RiderAttachments;
 import com.jpigeon.ridebattlelib.core.system.attachment.RiderData;
 import com.jpigeon.ridebattlelib.core.system.driver.DriverSystem;
+import com.jpigeon.ridebattlelib.core.system.event.SkillEvent;
 import com.jpigeon.ridebattlelib.core.system.form.DynamicFormConfig;
 import com.jpigeon.ridebattlelib.core.system.form.FormConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.HenshinSystem;
@@ -18,7 +19,9 @@ import com.jpigeon.ridebattlelib.core.system.network.handler.PacketHandler;
 import com.jpigeon.ridebattlelib.core.system.network.packet.*;
 import com.jpigeon.ridebattlelib.core.system.penalty.PenaltySystem;
 import com.jpigeon.ridebattlelib.core.system.skill.SkillSystem;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -45,7 +48,6 @@ public final class RiderManager {
 
     /**
      * 尝试让玩家变身。
-     *
      * @param player 玩家
      * @return 是否成功发起变身
      */
@@ -56,8 +58,7 @@ public final class RiderManager {
     }
 
     /**
-     * 解除让玩家变身。
-     *
+     * 解除玩家变身。
      * @param player 玩家
      * @return 是否成功解除变身
      */
@@ -72,7 +73,6 @@ public final class RiderManager {
 
     /**
      * 尝试切换玩家形态。
-     *
      * @param player 玩家
      * @return 是否成功切换
      */
@@ -168,9 +168,41 @@ public final class RiderManager {
     /**
      * 触发技能
      */
+    public static boolean triggerSkill(Player player, ResourceLocation formId, ResourceLocation skillId, SkillEvent.SkillTriggerType type) {
+        HenshinSystem.TransformedData data = HenshinSystem.INSTANCE.getTransformedData(player);
+        if (data == null) return false;
+
+        if (skillId != null) {
+            // 检查技能冷却
+            if (SkillSystem.isSkillOnCooldown(player, skillId)) {
+                int remaining = SkillSystem.getSkillRemainingCooldown(player, skillId);
+                if (player instanceof ServerPlayer serverPlayer) {
+                    serverPlayer.displayClientMessage(
+                            Component.literal("技能冷却中，剩余时间: " + remaining + "秒")
+                                    .withStyle(ChatFormatting.RED),
+                            true
+                    );
+                }
+                return false;
+            }
+
+            // 只触发事件，不执行具体逻辑
+            if (SkillSystem.triggerSkillEvent(player, formId, skillId, type)) {
+                // 技能成功触发后开始冷却
+                SkillSystem.startSkillCooldown(player, skillId);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static boolean triggerSkill(Player player, ResourceLocation formId, ResourceLocation skillId) {
-        if (Config.DEVELOPER_MODE.get()) RideBattleLib.LOGGER.debug("触发{}形态{}技能：{}", player.getName().getString(), formId, skillId);
-        return SkillSystem.triggerSkillEvent(player, formId, skillId);
+        return triggerSkill(player, formId, skillId, SkillEvent.SkillTriggerType.OTHER);
+    }
+
+    public static boolean triggerSkill(Player player, ResourceLocation skillId) {
+        ResourceLocation formId = getCurrentForm(player);
+        return triggerSkill(player, formId, skillId, SkillEvent.SkillTriggerType.OTHER);
     }
 
     /**
@@ -281,10 +313,10 @@ public final class RiderManager {
     }
 
     /**
-     * 检查玩家是否拥有特定形态
+     * 检查玩家是否变身为特定形态
      * @param player 玩家
      * @param formId 形态ID
-     * @return 是否拥有该形态
+     * @return 是否变身为该形态
      */
     public static boolean isSpecificForm(Player player, ResourceLocation formId) {
         ResourceLocation currentForm = getCurrentForm(player);
@@ -353,8 +385,8 @@ public final class RiderManager {
         for (ItemStack stack : driverItems.values()) {
             if (!stack.isEmpty() && stack.is(item)) {
                 if (Config.DEVELOPER_MODE.get()) {
-                    RideBattleLib.LOGGER.debug("在驱动器中找到物品: {} (数量: {})",
-                            BuiltInRegistries.ITEM.getKey(item), stack.getCount());
+                    RideBattleLib.LOGGER.debug("在驱动器中找到物品: {}",
+                            BuiltInRegistries.ITEM.getKey(item));
                 }
                 return true;
             }
@@ -512,7 +544,7 @@ public final class RiderManager {
         if (!player.level().isClientSide) {
             // 服务端：广播给所有玩家
             if (Config.DEVELOPER_MODE.get()) RideBattleLib.LOGGER.debug("播放音效{}", sound);
-            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), sound, category, volume, pitch);
+            player.level().playSound(null, player, sound, category, volume, pitch);
         }
     }
 
@@ -547,6 +579,15 @@ public final class RiderManager {
      */
     public static void scheduleSeconds(float seconds, Runnable callback){
         scheduleTicks((int) (seconds * 20), callback);
+    }
+
+    /**
+     * 快捷完成变身方法
+     * @param ticks 等待游戏刻数
+     * @param player 要完成变身的玩家
+     */
+    public static void completeIn(int ticks, Player player){
+        scheduleTicks(ticks, () -> completeHenshin(player));
     }
 
     /**

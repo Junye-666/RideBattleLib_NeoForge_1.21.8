@@ -198,7 +198,9 @@ public class RiderConfig {
         if (isDriverEmpty(driverItems)) {
             if (baseFormId != null && forms.containsKey(baseFormId) &&
                     forms.get(baseFormId).allowsEmptyDriver()) {
-                RideBattleLib.LOGGER.debug("使用允许空驱动器的基础形态: {}", baseFormId);
+                if (Config.DEBUG_MODE.get()){
+                    RideBattleLib.LOGGER.debug("使用允许空驱动器的基础形态: {}", baseFormId);
+                }
                 return baseFormId;
             } else {
                 RideBattleLib.LOGGER.warn("驱动器为空，且没有允许空驱动器的基础形态");
@@ -384,6 +386,18 @@ public class RiderConfig {
     // 添加形态获取方法
     public FormConfig getForms(ResourceLocation formId) {
         return forms.get(formId);
+    }
+
+    public Map<ResourceLocation, FormConfig> getForms(){
+        return forms;
+    }
+
+    public boolean includesForm(FormConfig formConfig) {
+        return this.getForms().containsValue(formConfig);
+    }
+
+    public boolean includesForm(ResourceLocation formId) {
+        return includesForm(RiderRegistry.getForm(formId));
     }
 
     public ResourceLocation getBaseFormId() {
