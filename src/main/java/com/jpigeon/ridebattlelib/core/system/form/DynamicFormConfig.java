@@ -13,7 +13,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -106,8 +105,10 @@ public class DynamicFormConfig extends FormConfig {
      * 自动判断盔甲槽位
      */
     private static EquipmentSlot getAutoArmorSlot(Item armorItem) {
-        if (armorItem instanceof ArmorItem armor) {
-            return armor.getEquipmentSlot();
+        // 根据物品的装备槽位推断
+        EquipmentSlot itemSlot = armorItem.getDefaultInstance().getEquipmentSlot();
+        if (itemSlot != null && itemSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
+            return itemSlot;
         }
         // 根据物品ID推断（备选方案）
         String itemId = BuiltInRegistries.ITEM.getKey(armorItem).getPath().toLowerCase();
@@ -448,9 +449,10 @@ public class DynamicFormConfig extends FormConfig {
             return slotMap.keySet().iterator().next();
         }
 
-        // 3. 根据物品类型推断
-        if (item instanceof ArmorItem armorItem) {
-            return armorItem.getEquipmentSlot();
+        // 3. 根据物品的装备槽位推断
+        EquipmentSlot itemSlot = item.getDefaultInstance().getEquipmentSlot();
+        if (itemSlot != null && itemSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
+            return itemSlot;
         }
 
         // 4. 根据物品ID推断
@@ -508,7 +510,7 @@ public class DynamicFormConfig extends FormConfig {
         // 返回默认底衣
         return new EnumMap<>(DEFAULT_UNDERSUIT);
     }
-    
+
     // ==================== 覆盖方法 ====================
 
     /**
