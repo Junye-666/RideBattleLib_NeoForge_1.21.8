@@ -86,7 +86,7 @@ public class EffectAndAttributeManager {
 
         // 移除可能存在的旧属性
         for (AttributeModifier modifier : form.getAttributes()) {
-            attributeRegistry.getHolder(
+            attributeRegistry.get(
                     ResourceKey.create(Registries.ATTRIBUTE, modifier.id())
             ).ifPresent(holder -> {
                 AttributeInstance instance = player.getAttribute(holder);
@@ -98,7 +98,7 @@ public class EffectAndAttributeManager {
 
         // 应用新属性
         for (AttributeModifier modifier : form.getAttributes()) {
-            attributeRegistry.getHolder(
+            attributeRegistry.get(
                     ResourceKey.create(Registries.ATTRIBUTE, modifier.id())
             ).ifPresent(holder -> {
                 AttributeInstance instance = player.getAttribute(holder);
@@ -126,7 +126,7 @@ public class EffectAndAttributeManager {
         // 移除属性修饰符
         Registry<Attribute> attributeRegistry = BuiltInRegistries.ATTRIBUTE;
         for (AttributeModifier modifier : form.getAttributes()) {
-            Holder<Attribute> holder = attributeRegistry.getHolder(
+            Holder<Attribute> holder = attributeRegistry.get(
                     ResourceKey.create(Registries.ATTRIBUTE, modifier.id())
             ).orElse(null);
 
