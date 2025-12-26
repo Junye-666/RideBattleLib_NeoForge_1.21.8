@@ -8,6 +8,7 @@ import com.jpigeon.ridebattlelib.core.system.form.FormConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderRegistry;
 import com.jpigeon.ridebattlelib.core.system.henshin.helper.TriggerType;
+import com.jpigeon.ridebattlelib.core.system.skill.SkillSystem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffects;
@@ -87,6 +88,7 @@ public class ExampleBasic {
                     TEST_CORE_SLOT,
                     Items.IRON_INGOT
             )
+            .setShouldPause(true)
             .addGrantedItem(Items.IRON_SWORD.getDefaultInstance()) // 变身时给予物品（传入ItemStack）
             .addGrantedItem(Items.SHIELD); // 变身时给予物品（传入Item）
 
@@ -123,7 +125,8 @@ public class ExampleBasic {
                     TEST_ENERGY_SLOT,
                     Items.REDSTONE
             )
-            .addGrantedItem(Items.NETHERITE_SWORD);
+            .addGrantedItem(Items.NETHERITE_SWORD)
+            .addSkill(ResourceLocation.fromNamespaceAndPath(RideBattleLib.MODID, "test_skill"));
 
 
     private static void registerAlphaRider() {
@@ -134,10 +137,8 @@ public class ExampleBasic {
                 .setBaseForm(alphaBaseForm.getFormId());// 设置基础形态
 
         alphaBaseForm.setAllowsEmptyDriver(false); // 指定驱动器物品的必要性
-        alphaBaseForm.setShouldPause(true); // 指定是否在驱动器键按下时暂停
 
-        alphaPoweredForm.setShouldPause(false);
-
+        SkillSystem.registerSkill(ResourceLocation.fromNamespaceAndPath(RideBattleLib.MODID, "test_skill"), Component.literal("MAN"), 20);
         // 注册骑士（核心步骤！）
         RiderRegistry.registerRider(riderAlpha);
     }
@@ -166,6 +167,12 @@ public class ExampleBasic {
             public void onSwitchForm(FormSwitchEvent.Pre event) { // 监听形态切换事件
                 if (event.getOldFormId().equals(TEST_FORM_POWERED)) { // 仅当切换形态前为金色形态时
                     event.getPlayer().displayClientMessage(Component.literal("从金形态切换时会出现在物品栏上方的字"), true);
+                }
+                if (event.getNewFormId().equals(TEST_FORM_BASE)) { // 仅为基础形态触发
+                    RiderManager.scheduleSeconds( // 等待2.21秒后触发completeHenshin
+                            2.21F,
+                            () -> RiderManager.completeHenshin(event.getPlayer())
+                    );
                 }
             }
         });

@@ -13,6 +13,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -105,10 +106,8 @@ public class DynamicFormConfig extends FormConfig {
      * 自动判断盔甲槽位
      */
     private static EquipmentSlot getAutoArmorSlot(Item armorItem) {
-        // 根据物品的装备槽位推断
-        EquipmentSlot itemSlot = armorItem.getDefaultInstance().getEquipmentSlot();
-        if (itemSlot != null && itemSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
-            return itemSlot;
+        if (armorItem instanceof ArmorItem armor) {
+            return armor.getEquipmentSlot();
         }
         // 根据物品ID推断（备选方案）
         String itemId = BuiltInRegistries.ITEM.getKey(armorItem).getPath().toLowerCase();
@@ -449,10 +448,9 @@ public class DynamicFormConfig extends FormConfig {
             return slotMap.keySet().iterator().next();
         }
 
-        // 3. 根据物品的装备槽位推断
-        EquipmentSlot itemSlot = item.getDefaultInstance().getEquipmentSlot();
-        if (itemSlot != null && itemSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
-            return itemSlot;
+        // 3. 根据物品类型推断
+        if (item instanceof ArmorItem armorItem) {
+            return armorItem.getEquipmentSlot();
         }
 
         // 4. 根据物品ID推断
@@ -547,12 +545,27 @@ public class DynamicFormConfig extends FormConfig {
     }
 
     @Override
-    public void setShouldPause(boolean pause) {
+    public DynamicFormConfig setShouldPause(boolean pause) {
         this.shouldPause = pause;
+        return this;
     }
 
     @Override
     public boolean shouldPause() {
         return shouldPause;
+    }
+
+    /**
+     * 重写获取技能ID的方法，支持动态形态的技能
+     */
+    @Override
+    public List<ResourceLocation> getSkillIds() {
+        // 动态形态可以合并基础形态的技能
+        List<ResourceLocation> allSkills = new ArrayList<>(super.getSkillIds());
+
+        // 可以根据驱动器物品添加额外技能
+        // 例如：遍历driverSnapshot，根据物品类型添加技能
+
+        return Collections.unmodifiableList(allSkills);
     }
 }

@@ -180,9 +180,12 @@ public class FormConfig {
     /**
      * 表明此形态变身时是否有缓冲阶段
      */
-    public void setShouldPause(boolean pause) {
+    public FormConfig setShouldPause(boolean pause) {
         this.shouldPause = pause;
+        return this;
     }
+
+
 
     /**
      * 为形态赋予技能
@@ -201,6 +204,7 @@ public class FormConfig {
     public void setAllowsEmptyDriver(boolean allow) {
         this.allowsEmptyDriver = allow;
     }
+
 
     //====================内部方法====================
     // 匹配验证
@@ -382,8 +386,89 @@ public class FormConfig {
     }
 
     public ResourceLocation getCurrentSkillId(Player player) {
+        // 从玩家数据中获取技能索引
         RiderData data = player.getData(RiderAttachments.RIDER_DATA);
         int index = data.getCurrentSkillIndex();
-        return skillIds.isEmpty() ? null : skillIds.get(index % skillIds.size());
+
+        // 确保索引在有效范围内
+        if (skillIds.isEmpty()) {
+            return null;
+        }
+
+        // 使用模运算确保索引有效
+        return skillIds.get(index % skillIds.size());
+    }
+
+    /**
+     * 检查形态是否包含指定技能
+     */
+    public boolean hasSkill(ResourceLocation skillId) {
+        return skillIds.contains(skillId);
+    }
+
+
+    /**
+     * 创建此FormConfig的深度副本
+     * @param newFormId 新副本的形态ID（可以为null，使用原ID）
+     * @return 深度副本FormConfig
+     */
+    public FormConfig copy(@Nullable ResourceLocation newFormId) {
+        FormConfig copy = new FormConfig(newFormId != null ? newFormId : this.formId);
+
+        // 复制所有基础属性
+        copy.helmet = this.helmet;
+        copy.chestplate = this.chestplate;
+        copy.leggings = this.leggings;
+        copy.boots = this.boots;
+        copy.triggerType = this.triggerType;
+        copy.allowsEmptyDriver = this.allowsEmptyDriver;
+        copy.shouldPause = this.shouldPause;
+
+        // 深度复制集合
+        copy.attributes.addAll(new ArrayList<>(this.attributes));
+        copy.effects.addAll(new ArrayList<>(this.effects));
+        copy.attributeIds.addAll(new ArrayList<>(this.attributeIds));
+        copy.effectIds.addAll(new ArrayList<>(this.effectIds));
+        copy.requiredItems.putAll(new HashMap<>(this.requiredItems));
+        copy.auxRequiredItems.putAll(new HashMap<>(this.auxRequiredItems));
+        copy.skillIds.addAll(new ArrayList<>(this.skillIds));
+
+        // 深度复制ItemStack
+        for (ItemStack stack : this.grantedItems) {
+            copy.grantedItems.add(stack.copy());
+        }
+
+        return copy;
+    }
+
+    public FormConfig copyWithoutItemsAndSkills(@Nullable ResourceLocation newFormId) {
+        FormConfig copy = new FormConfig(newFormId != null ? newFormId : this.formId);
+
+        // 复制所有基础属性
+        copy.helmet = this.helmet;
+        copy.chestplate = this.chestplate;
+        copy.leggings = this.leggings;
+        copy.boots = this.boots;
+        copy.triggerType = this.triggerType;
+        copy.shouldPause = this.shouldPause;
+
+        // 深度复制集合
+        copy.attributes.addAll(new ArrayList<>(this.attributes));
+        copy.effects.addAll(new ArrayList<>(this.effects));
+        copy.attributeIds.addAll(new ArrayList<>(this.attributeIds));
+        copy.effectIds.addAll(new ArrayList<>(this.effectIds));
+
+        return copy;
+    }
+
+    /**
+     * 快速创建副本，使用原形态ID
+     */
+    public FormConfig copy() {
+        return copy(this.formId);
+    }
+
+    public FormConfig copyWithoutItemsAndSkills() {
+        return copyWithoutItemsAndSkills(this.formId);
     }
 }

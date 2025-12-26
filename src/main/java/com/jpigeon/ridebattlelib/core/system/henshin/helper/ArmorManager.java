@@ -84,7 +84,7 @@ public class ArmorManager {
         // 如果驱动器槽位没有正确驱动器，才检查背包
         if (!hasDriverInSlot) {
             boolean hasDriverInInventory = false;
-            for (ItemStack stack : player.getInventory().getNonEquipmentItems()) {
+            for (ItemStack stack : player.getInventory().items) {
                 if (!stack.isEmpty() && stack.is(data.config().getDriverItem())) {
                     hasDriverInInventory = true;
                     break;

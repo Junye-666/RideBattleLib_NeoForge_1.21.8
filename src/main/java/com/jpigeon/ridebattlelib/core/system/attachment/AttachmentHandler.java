@@ -6,6 +6,7 @@ import com.jpigeon.ridebattlelib.core.system.henshin.HenshinSystem;
 import com.jpigeon.ridebattlelib.core.system.henshin.helper.HenshinHelper;
 import com.jpigeon.ridebattlelib.core.system.henshin.helper.HenshinState;
 import com.jpigeon.ridebattlelib.core.system.henshin.helper.SyncManager;
+import com.jpigeon.ridebattlelib.core.system.skill.SkillSystem;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -69,6 +70,7 @@ public class AttachmentHandler {
         Player original = event.getOriginal();
         Player newPlayer = event.getEntity();
         RiderData originalData = original.getData(RiderAttachments.RIDER_DATA);
+        SkillSystem.clearAllSkillCooldowns(newPlayer);
 
         // 只复制 mainDriverItems 和变身数据（但重生时不自动恢复）
         newPlayer.setData(RiderAttachments.RIDER_DATA, new RiderData(
@@ -92,6 +94,7 @@ public class AttachmentHandler {
     @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         Player player = event.getEntity();
+        SkillSystem.clearAllSkillCooldowns(player);
 
         player.removeTag("just_respawned");
 

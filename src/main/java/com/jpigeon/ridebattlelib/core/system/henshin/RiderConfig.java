@@ -392,12 +392,12 @@ public class RiderConfig {
         return forms;
     }
 
-    public boolean includesForm(FormConfig formConfig) {
+    public boolean includesFormConfig(FormConfig formConfig) {
         return this.getForms().containsValue(formConfig);
     }
 
-    public boolean includesForm(ResourceLocation formId) {
-        return includesForm(RiderRegistry.getForm(formId));
+    public boolean includesFormId(ResourceLocation formId) {
+        return this.getForms().containsKey(formId);
     }
 
     public ResourceLocation getBaseFormId() {

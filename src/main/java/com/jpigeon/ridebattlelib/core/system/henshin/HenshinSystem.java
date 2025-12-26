@@ -91,8 +91,8 @@ public class HenshinSystem implements IHenshinSystem {
 
             if (!isTransformed(player)) {
                 DriverActionManager.INSTANCE.prepareHenshin(player, formId);
-            } else {
-                DriverActionManager.INSTANCE.prepareFormSwitch(player, oldFormId, formId);
+            } else if (oldFormId != null) {
+                    DriverActionManager.INSTANCE.prepareFormSwitch(player, oldFormId, formId);
             }
 
             HenshinPauseEvent.Post postPause = new HenshinPauseEvent.Post(player, config.getRiderId(), formId);
