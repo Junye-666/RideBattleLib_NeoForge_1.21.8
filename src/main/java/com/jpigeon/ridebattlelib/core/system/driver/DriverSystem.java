@@ -14,7 +14,7 @@ import com.jpigeon.ridebattlelib.core.system.henshin.helper.SyncManager;
 import com.jpigeon.ridebattlelib.core.system.network.packet.DriverDataDiffPacket;
 import com.jpigeon.ridebattlelib.core.system.network.packet.DriverDataSyncPacket;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -28,7 +28,7 @@ public class DriverSystem implements IDriverSystem {
     //====================核心方法====================
 
     @Override
-    public boolean insertItem(Player player, ResourceLocation slotId, ItemStack stack) {
+    public boolean insertItem(Player player, Identifier slotId, ItemStack stack) {
         if (stack.isEmpty() || stack.getCount() <= 0) {
             RideBattleLib.LOGGER.error("无法插入无效物品");
             return false;
@@ -68,10 +68,10 @@ public class DriverSystem implements IDriverSystem {
 
         RiderData data = player.getData(RiderAttachments.RIDER_DATA);
         // 确保是副本，而不是只读Map
-        Map<ResourceLocation, ItemStack> mainItems = new HashMap<>(data.getDriverItems(config.getRiderId()));
-        Map<ResourceLocation, ItemStack> auxItems = new HashMap<>(data.auxDriverItems.getOrDefault(config.getRiderId(), new HashMap<>()));
+        Map<Identifier, ItemStack> mainItems = new HashMap<>(data.getDriverItems(config.getRiderId()));
+        Map<Identifier, ItemStack> auxItems = new HashMap<>(data.auxDriverItems.getOrDefault(config.getRiderId(), new HashMap<>()));
 
-        Map<ResourceLocation, ItemStack> targetMap = isAuxSlot ? auxItems : mainItems;
+        Map<Identifier, ItemStack> targetMap = isAuxSlot ? auxItems : mainItems;
 
         // 检查槽位是否被占用
         if (targetMap.containsKey(slotId)) {
@@ -119,13 +119,13 @@ public class DriverSystem implements IDriverSystem {
     }
 
     @Override
-    public ItemStack extractItem(Player player, ResourceLocation slotId) {
+    public ItemStack extractItem(Player player, Identifier slotId) {
         RiderData data = player.getData(RiderAttachments.RIDER_DATA);
         RiderConfig config = RiderConfig.findActiveDriverConfig(player);
         if (config == null) return ItemStack.EMPTY;
 
         boolean isAuxSlot = config.getAuxSlotDefinitions().containsKey(slotId);
-        Map<ResourceLocation, ItemStack> targetMap = isAuxSlot ?
+        Map<Identifier, ItemStack> targetMap = isAuxSlot ?
                 new HashMap<>(data.auxDriverItems.getOrDefault(config.getRiderId(), new HashMap<>())) :
                 new HashMap<>(data.getDriverItems(config.getRiderId()));
 
@@ -170,10 +170,10 @@ public class DriverSystem implements IDriverSystem {
         }
 
         // 使用extractItem逐个提取所有物品，复用现有逻辑
-        Map<ResourceLocation, ItemStack> allItems = getDriverItems(player);
-        List<ResourceLocation> slotsToExtract = new ArrayList<>(allItems.keySet());
+        Map<Identifier, ItemStack> allItems = getDriverItems(player);
+        List<Identifier> slotsToExtract = new ArrayList<>(allItems.keySet());
 
-        for (ResourceLocation slotId : slotsToExtract) {
+        for (Identifier slotId : slotsToExtract) {
             extractItem(player, slotId);
         }
 
@@ -189,8 +189,8 @@ public class DriverSystem implements IDriverSystem {
     }
 
     //内部提取方法，包含提取物品的核心逻辑
-    private boolean extractItemInternal(Player player, ResourceLocation slotId,
-                                        Map<ResourceLocation, ItemStack> targetMap,
+    private boolean extractItemInternal(Player player, Identifier slotId,
+                                        Map<Identifier, ItemStack> targetMap,
                                         RiderConfig config, boolean isAuxSlot) {
         RiderData data = player.getData(RiderAttachments.RIDER_DATA);
 
@@ -255,18 +255,18 @@ public class DriverSystem implements IDriverSystem {
     //====================Getters====================
 
     @Override
-    public Map<ResourceLocation, ItemStack> getDriverItems(Player player) {
+    public Map<Identifier, ItemStack> getDriverItems(Player player) {
         RiderData data = player.getData(RiderAttachments.RIDER_DATA);
 
         // 根据当前激活的骑士获取驱动器数据
         RiderConfig config = RiderConfig.findActiveDriverConfig(player);
         if (config == null) return new HashMap<>();
 
-        Map<ResourceLocation, ItemStack> allItems = new HashMap<>(data.getDriverItems(config.getRiderId()));
+        Map<Identifier, ItemStack> allItems = new HashMap<>(data.getDriverItems(config.getRiderId()));
 
         // 只在装备辅助驱动器时添加辅助槽位
         if (config.hasAuxDriverEquipped(player)) {
-            for (ResourceLocation slotId : config.getAuxSlotDefinitions().keySet()) {
+            for (Identifier slotId : config.getAuxSlotDefinitions().keySet()) {
                 ItemStack item = data.getAuxDriverItems(config.getRiderId(), slotId);
                 if (!item.isEmpty()) {
                     allItems.put(slotId, item);
@@ -287,12 +287,12 @@ public class DriverSystem implements IDriverSystem {
         RiderConfig config = RiderConfig.findActiveDriverConfig(player);
         if (config == null) return;
 
-        ResourceLocation riderId = config.getRiderId();
+        Identifier riderId = config.getRiderId();
 
         // 创建新数据
-        Map<ResourceLocation, Map<ResourceLocation, ItemStack>> newRiderDriverItems =
+        Map<Identifier, Map<Identifier, ItemStack>> newRiderDriverItems =
                 new HashMap<>(oldData.mainDriverItems);
-        Map<ResourceLocation, Map<ResourceLocation, ItemStack>> newAuxDriverItems =
+        Map<Identifier, Map<Identifier, ItemStack>> newAuxDriverItems =
                 new HashMap<>(oldData.auxDriverItems);
 
         // 更新主驱动器数据
@@ -322,11 +322,11 @@ public class DriverSystem implements IDriverSystem {
         RiderData oldData = player.getData(RiderAttachments.RIDER_DATA);
         RiderConfig config = RiderConfig.findActiveDriverConfig(player);
         if (config == null) return;
-        ResourceLocation riderId = config.getRiderId();
+        Identifier riderId = config.getRiderId();
 
         // 创建新数据（深拷贝）
-        Map<ResourceLocation, Map<ResourceLocation, ItemStack>> newRiderDriverItems = new HashMap<>();
-        Map<ResourceLocation, Map<ResourceLocation, ItemStack>> newAuxDriverItems = new HashMap<>();
+        Map<Identifier, Map<Identifier, ItemStack>> newRiderDriverItems = new HashMap<>();
+        Map<Identifier, Map<Identifier, ItemStack>> newAuxDriverItems = new HashMap<>();
 
         // 复制主驱动器数据
         oldData.mainDriverItems.forEach((id, items) ->
@@ -339,20 +339,20 @@ public class DriverSystem implements IDriverSystem {
         );
 
         // 获取当前骑士的主驱动器数据
-        Map<ResourceLocation, ItemStack> currentMainItems =
+        Map<Identifier, ItemStack> currentMainItems =
                 new HashMap<>(newRiderDriverItems.getOrDefault(riderId, new HashMap<>()));
 
         // 获取当前骑士的辅助驱动器数据
-        Map<ResourceLocation, ItemStack> currentAuxItems =
+        Map<Identifier, ItemStack> currentAuxItems =
                 new HashMap<>(newAuxDriverItems.getOrDefault(riderId, new HashMap<>()));
 
         // 应用变更
         if (packet.fullSync()) {
             // 分离主驱动器和辅助驱动器数据
-            Map<ResourceLocation, ItemStack> mainChanges = new HashMap<>();
-            Map<ResourceLocation, ItemStack> auxChanges = new HashMap<>();
+            Map<Identifier, ItemStack> mainChanges = new HashMap<>();
+            Map<Identifier, ItemStack> auxChanges = new HashMap<>();
 
-            for (Map.Entry<ResourceLocation, ItemStack> entry : packet.changes().entrySet()) {
+            for (Map.Entry<Identifier, ItemStack> entry : packet.changes().entrySet()) {
                 if (config.getSlotDefinitions().containsKey(entry.getKey())) {
                     mainChanges.put(entry.getKey(), entry.getValue());
                 } else if (config.getAuxSlotDefinitions().containsKey(entry.getKey())) {
@@ -363,8 +363,8 @@ public class DriverSystem implements IDriverSystem {
             currentMainItems = mainChanges;
             currentAuxItems = auxChanges;
         } else {
-            Map<ResourceLocation, ItemStack> finalMainItems = currentMainItems;
-            Map<ResourceLocation, ItemStack> finalAuxItems = currentAuxItems;
+            Map<Identifier, ItemStack> finalMainItems = currentMainItems;
+            Map<Identifier, ItemStack> finalAuxItems = currentAuxItems;
 
             packet.changes().forEach((slotId, stack) -> {
                 // 根据槽位类型分离数据
@@ -406,7 +406,7 @@ public class DriverSystem implements IDriverSystem {
         return Minecraft.getInstance().level.getPlayerByUUID(playerId);
     }
 
-    private void cleanInvalidStacks(Map<ResourceLocation, ItemStack> items) {
+    private void cleanInvalidStacks(Map<Identifier, ItemStack> items) {
         items.entrySet().removeIf(entry ->
                 entry.getValue().isEmpty() ||
                         entry.getValue().getCount() <= 0

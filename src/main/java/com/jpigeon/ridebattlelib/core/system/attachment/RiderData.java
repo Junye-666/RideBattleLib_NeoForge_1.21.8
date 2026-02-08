@@ -1,9 +1,10 @@
 package com.jpigeon.ridebattlelib.core.system.attachment;
 
+import com.jpigeon.ridebattlelib.RideBattleLib;
 import com.jpigeon.ridebattlelib.core.system.henshin.helper.HenshinState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,20 +14,20 @@ import java.util.Map;
 import java.util.Optional;
 
 public class RiderData {
-    public final Map<ResourceLocation, Map<ResourceLocation, ItemStack>> mainDriverItems;
-    public final Map<ResourceLocation, Map<ResourceLocation, ItemStack>> auxDriverItems;
+    public final Map<Identifier, Map<Identifier, ItemStack>> mainDriverItems;
+    public final Map<Identifier, Map<Identifier, ItemStack>> auxDriverItems;
     private final @Nullable TransformedAttachmentData transformedData;
     private HenshinState henshinState;
-    private @Nullable ResourceLocation pendingFormId;
+    private @Nullable Identifier pendingFormId;
     private long penaltyCooldownEnd;
     private int currentSkillIndex;
 
     public RiderData(
-            Map<ResourceLocation, Map<ResourceLocation, ItemStack>> mainDriverItems,
-            Map<ResourceLocation, Map<ResourceLocation, ItemStack>> auxDriverItems,
+            Map<Identifier, Map<Identifier, ItemStack>> mainDriverItems,
+            Map<Identifier, Map<Identifier, ItemStack>> auxDriverItems,
             @Nullable TransformedAttachmentData transformedData,
             HenshinState henshinState,
-            @Nullable ResourceLocation pendingFormId,
+            @Nullable Identifier pendingFormId,
             long penaltyCooldownEnd,
             int currentSkillIndex
     ) {
@@ -43,7 +44,7 @@ public class RiderData {
 
     //====================Setter方法====================
 
-    public void setAuxDriverItems(ResourceLocation riderId, Map<ResourceLocation, ItemStack> items) {
+    public void setAuxDriverItems(Identifier riderId, Map<Identifier, ItemStack> items) {
         if (items == null) {
             auxDriverItems.remove(riderId);
         } else {
@@ -55,12 +56,12 @@ public class RiderData {
         this.henshinState = state;
     }
 
-    public void setPendingFormId(@Nullable ResourceLocation formId) {
-        this.pendingFormId = formId;
+    public void setPendingFormId(Identifier formId) {
+        this.pendingFormId = formId != null ? formId : Identifier.fromNamespaceAndPath(RideBattleLib.MODID, "empty");
     }
 
     // Setter 方法
-    public void setDriverItems(ResourceLocation riderId, Map<ResourceLocation, ItemStack> items) {
+    public void setDriverItems(Identifier riderId, Map<Identifier, ItemStack> items) {
         if (items == null) {
             mainDriverItems.remove(riderId);
         } else {
@@ -78,11 +79,11 @@ public class RiderData {
 
     //====================Getter方法====================
 
-    public Map<ResourceLocation, ItemStack> getDriverItems(ResourceLocation riderId) {
+    public Map<Identifier, ItemStack> getDriverItems(Identifier riderId) {
         return mainDriverItems.getOrDefault(riderId, new HashMap<>());
     }
 
-    public ItemStack getAuxDriverItems(ResourceLocation riderId, ResourceLocation slotId) {
+    public ItemStack getAuxDriverItems(Identifier riderId, Identifier slotId) {
         return auxDriverItems.getOrDefault(riderId, Collections.emptyMap())
                 .getOrDefault(slotId, ItemStack.EMPTY);
     }
@@ -95,9 +96,8 @@ public class RiderData {
         return henshinState;
     }
 
-    @Nullable
-    public ResourceLocation getPendingFormId() {
-        return pendingFormId;
+    public Identifier getPendingFormId() {
+        return pendingFormId != null ? pendingFormId : Identifier.fromNamespaceAndPath(RideBattleLib.MODID, "empty");
     }
 
     public long getPenaltyCooldownEnd() {
@@ -118,13 +118,13 @@ public class RiderData {
             instance.group(
 
                     Codec.unboundedMap(
-                                    ResourceLocation.CODEC,
-                                    Codec.unboundedMap(ResourceLocation.CODEC, ItemStack.OPTIONAL_CODEC)
+                                    Identifier.CODEC,
+                                    Codec.unboundedMap(Identifier.CODEC, ItemStack.OPTIONAL_CODEC)
                             ).optionalFieldOf("mainDriverItems", new HashMap<>())
                             .forGetter(data -> data.mainDriverItems),
 
-                    Codec.unboundedMap(ResourceLocation.CODEC,
-                                    Codec.unboundedMap(ResourceLocation.CODEC, ItemStack.OPTIONAL_CODEC)
+                    Codec.unboundedMap(Identifier.CODEC,
+                                    Codec.unboundedMap(Identifier.CODEC, ItemStack.OPTIONAL_CODEC)
                             ).optionalFieldOf("auxDriverItems", new HashMap<>())
                             .forGetter(data -> data.auxDriverItems),
 
@@ -136,7 +136,7 @@ public class RiderData {
                             .forGetter(data -> data.henshinState),
 
 
-                    ResourceLocation.CODEC.optionalFieldOf("pendingFormId")
+                    Identifier.CODEC.optionalFieldOf("pendingFormId")
                             .forGetter(data -> Optional.ofNullable(data.pendingFormId)),
 
                     Codec.LONG.fieldOf("penaltyCooldownEnd")

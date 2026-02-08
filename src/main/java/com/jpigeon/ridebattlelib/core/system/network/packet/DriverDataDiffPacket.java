@@ -6,7 +6,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,15 +16,15 @@ import java.util.UUID;
 
 public record DriverDataDiffPacket(
         UUID playerId,
-        Map<ResourceLocation, ItemStack> changes,
+        Map<Identifier, ItemStack> changes,
         boolean fullSync
 ) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RideBattleLib.MODID, "driver_diff_sync");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(RideBattleLib.MODID, "driver_diff_sync");
 
-    public static final Type<DriverDataDiffPacket> TYPE = new Type<>(ID);
+    public static final Type<@NotNull DriverDataDiffPacket> TYPE = new Type<>(ID);
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, DriverDataDiffPacket> STREAM_CODEC =
+    public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull DriverDataDiffPacket> STREAM_CODEC =
             StreamCodec.composite(
                     UUIDStreamCodec.INSTANCE,
                     DriverDataDiffPacket::playerId,
@@ -35,12 +35,12 @@ public record DriverDataDiffPacket(
                     DriverDataDiffPacket::new
             );
 
-    private static StreamCodec<RegistryFriendlyByteBuf, Map<ResourceLocation, ItemStack>> createChangesCodec() {
+    private static StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull Map<Identifier, ItemStack>> createChangesCodec() {
         return StreamCodec.of(
                 (buf, changes) -> {
                     buf.writeVarInt(changes.size());
-                    for (Map.Entry<ResourceLocation, ItemStack> entry : changes.entrySet()) {
-                        ResourceLocation.STREAM_CODEC.encode(buf, entry.getKey());
+                    for (Map.Entry<Identifier, ItemStack> entry : changes.entrySet()) {
+                        Identifier.STREAM_CODEC.encode(buf, entry.getKey());
 
                         if (entry.getValue().isEmpty()) {
                             buf.writeBoolean(false);
@@ -51,10 +51,10 @@ public record DriverDataDiffPacket(
                     }
                 },
                 buf -> {
-                    Map<ResourceLocation, ItemStack> changes = new HashMap<>();
+                    Map<Identifier, ItemStack> changes = new HashMap<>();
                     int size = buf.readVarInt();
                     for (int i = 0; i < size; i++) {
-                        ResourceLocation slotId = ResourceLocation.STREAM_CODEC.decode(buf);
+                        Identifier slotId = Identifier.STREAM_CODEC.decode(buf);
                         boolean hasItem = buf.readBoolean();
 
                         if (hasItem) {

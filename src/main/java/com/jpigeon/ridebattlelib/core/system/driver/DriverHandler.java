@@ -14,7 +14,7 @@ import com.jpigeon.ridebattlelib.core.system.henshin.helper.SyncManager;
 import com.jpigeon.ridebattlelib.core.system.henshin.helper.TriggerType;
 import com.jpigeon.ridebattlelib.core.system.network.handler.PacketHandler;
 import com.jpigeon.ridebattlelib.core.system.network.packet.DriverActionPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -90,7 +90,7 @@ public class DriverHandler {
         event.setCanceled(true);
 
         RiderData data = player.getData(RiderAttachments.RIDER_DATA);
-        ResourceLocation formId = data.getPendingFormId();
+        Identifier formId = data.getPendingFormId();
         FormConfig formConfig = RiderRegistry.getForm(formId);
 
         // 触发变身逻辑
@@ -125,7 +125,7 @@ public class DriverHandler {
         ItemStack itemToInsert = heldItem.copyWithCount(1);
 
         // 先尝试主驱动器槽位
-        for (ResourceLocation slotId : config.getSlotDefinitions().keySet()) {
+        for (Identifier slotId : config.getSlotDefinitions().keySet()) {
             if (DriverSystem.INSTANCE.insertItem(player, slotId, itemToInsert)) {
                 heldItem.shrink(1);
                 inserted = true;
@@ -135,7 +135,7 @@ public class DriverHandler {
 
         // 再尝试辅助驱动器槽位
         if (!inserted && config.hasAuxDriverEquipped(player)) {
-            for (ResourceLocation slotId : config.getAuxSlotDefinitions().keySet()) {
+            for (Identifier slotId : config.getAuxSlotDefinitions().keySet()) {
                 if (DriverSystem.INSTANCE.insertItem(player, slotId, itemToInsert)) {
                     heldItem.shrink(1);
                     inserted = true;
@@ -174,7 +174,6 @@ public class DriverHandler {
         if (!RiderManager.isTransformed(player)) return;
         RiderConfig config = RiderManager.getActiveRiderConfig(player);
         if (config == null) return;
-        RideBattleLib.LOGGER.debug("检测到玩家更改");
 
         // 只关心骑士驱动器槽位
         EquipmentSlot slot = event.getSlot();

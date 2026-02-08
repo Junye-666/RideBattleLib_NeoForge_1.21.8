@@ -12,7 +12,7 @@ import com.jpigeon.ridebattlelib.core.system.henshin.RiderConfig;
 import com.jpigeon.ridebattlelib.core.system.network.handler.PacketHandler;
 import com.jpigeon.ridebattlelib.core.system.network.packet.HenshinPacket;
 import com.jpigeon.ridebattlelib.core.system.network.packet.SwitchFormPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.common.NeoForge;
@@ -22,7 +22,7 @@ import java.util.Objects;
 public class DriverActionManager {
     public static final DriverActionManager INSTANCE = new DriverActionManager();
 
-    public void prepareHenshin(Player player, ResourceLocation formId) {
+    public void prepareHenshin(Player player, Identifier formId) {
         if (RiderManager.isTransformed(player)) return;
         RiderConfig config = RiderConfig.findActiveDriverConfig(player);
         if (config == null) return;
@@ -40,7 +40,7 @@ public class DriverActionManager {
         }
     }
 
-    public void prepareFormSwitch(Player player, ResourceLocation oldFormId, ResourceLocation newFormId){
+    public void prepareFormSwitch(Player player, Identifier oldFormId, Identifier newFormId){
         RiderConfig config = RiderConfig.findActiveDriverConfig(player);
         if (oldFormId.equals(newFormId)) return;
         if (config == null) return;
@@ -66,7 +66,7 @@ public class DriverActionManager {
         PacketHandler.sendToServer(new HenshinPacket(player.getUUID(), config.getRiderId()));
     }
 
-    public void proceedFormSwitch(Player player, ResourceLocation newFormId) {
+    public void proceedFormSwitch(Player player, Identifier newFormId) {
         if (Config.DEBUG_MODE.get()) {
             RideBattleLib.LOGGER.debug("玩家 {} 进入形态切换阶段", player.getName());
             RideBattleLib.LOGGER.debug("发送形态切换包: {}", newFormId);
@@ -76,12 +76,12 @@ public class DriverActionManager {
 
     public void completeTransformation(Player player) {
         RiderData data = player.getData(RiderAttachments.RIDER_DATA);
-        ResourceLocation formId = data.getPendingFormId();
+        Identifier formId = data.getPendingFormId();
         if (Config.DEBUG_MODE.get()) {
             RideBattleLib.LOGGER.debug("当前状态: {}, 形态ID: {}", data.getHenshinState(), formId);
         }
 
-        if (formId == null) {
+        if (formId == null || formId.equals(Identifier.fromNamespaceAndPath(RideBattleLib.MODID, "empty"))) {
             RideBattleLib.LOGGER.error("尝试完成变身但目标形态丢失/不存在");
             return;
         }

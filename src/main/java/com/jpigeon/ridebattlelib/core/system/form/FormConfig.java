@@ -9,7 +9,7 @@ import com.jpigeon.ridebattlelib.core.system.henshin.RiderConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.helper.TriggerType;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -17,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -28,7 +29,7 @@ import java.util.*;
  * 可通过 RiderConfig.addForm() 添加。
  */
 public class FormConfig {
-    private final ResourceLocation formId;
+    private final Identifier formId;
     private Item helmet = Items.AIR;
     private Item chestplate = Items.AIR;
     private @Nullable Item leggings = Items.AIR;
@@ -37,16 +38,16 @@ public class FormConfig {
 
     private final List<AttributeModifier> attributes = new ArrayList<>();
     private final List<MobEffectInstance> effects = new ArrayList<>();
-    private final List<ResourceLocation> attributeIds = new ArrayList<>();
-    private final List<ResourceLocation> effectIds = new ArrayList<>();
-    private final Map<ResourceLocation, Item> requiredItems = new HashMap<>();
-    private final Map<ResourceLocation, Item> auxRequiredItems = new HashMap<>();
+    private final List<Identifier> attributeIds = new ArrayList<>();
+    private final List<Identifier> effectIds = new ArrayList<>();
+    private final Map<Identifier, Item> requiredItems = new HashMap<>();
+    private final Map<Identifier, Item> auxRequiredItems = new HashMap<>();
     private final List<ItemStack> grantedItems = new ArrayList<>();
     private boolean allowsEmptyDriver = false;
     private boolean shouldPause = false;
-    private final List<ResourceLocation> skillIds = new ArrayList<>();
+    private final List<Identifier> skillIds = new ArrayList<>();
 
-    public FormConfig(ResourceLocation formId) {
+    public FormConfig(Identifier formId) {
         this.formId = formId;
     }
 
@@ -99,7 +100,7 @@ public class FormConfig {
      * @param amount 修改值
      * @param operation 修改方式
      */
-    public FormConfig addAttribute(ResourceLocation attributeId, double amount,
+    public FormConfig addAttribute(Identifier attributeId, double amount,
                                    AttributeModifier.Operation operation) {
         attributes.add(new AttributeModifier(attributeId, amount, operation));
         attributeIds.add(attributeId);
@@ -109,7 +110,7 @@ public class FormConfig {
     /**
      * 添加属性（默认使用ADD_VALUE）
      */
-    public FormConfig addAttribute(ResourceLocation attributeId, double amount) {
+    public FormConfig addAttribute(Identifier attributeId, double amount) {
         return addAttribute(attributeId, amount, AttributeModifier.Operation.ADD_VALUE);
     }
 
@@ -120,9 +121,9 @@ public class FormConfig {
      * @param amplifier 等级：0为1级
      * @param hideParticles 是否隐藏粒子效果
      */
-    public FormConfig addEffect(Holder<MobEffect> effect, int duration,
+    public FormConfig addEffect(Holder<@NotNull MobEffect> effect, int duration,
                                 int amplifier, boolean hideParticles) {
-        ResourceLocation effectId = BuiltInRegistries.MOB_EFFECT.getKey(effect.value());
+        Identifier effectId = BuiltInRegistries.MOB_EFFECT.getKey(effect.value());
         effectIds.add(effectId);
         effects.add(new MobEffectInstance(effect, duration, amplifier, false, !hideParticles));
         return this;
@@ -133,14 +134,14 @@ public class FormConfig {
      * @param effect MobEffects中获取
      * @param amplifier 等级：0为1级
      */
-    public FormConfig addEffect(Holder<MobEffect> effect, int amplifier){
+    public FormConfig addEffect(Holder<@NotNull MobEffect> effect, int amplifier){
         return addEffect(effect, 114514, amplifier, true);
     }
 
     /**
      * 添加形态所需主驱动器物品
      */
-    public FormConfig addRequiredItem(ResourceLocation slotId, Item item) {
+    public FormConfig addRequiredItem(Identifier slotId, Item item) {
         requiredItems.put(slotId, item);
         return this;
     }
@@ -148,7 +149,7 @@ public class FormConfig {
     /**
      * 添加形态所需副驱动器物品
      */
-    public FormConfig addAuxRequiredItem(ResourceLocation slotId, Item item) {
+    public FormConfig addAuxRequiredItem(Identifier slotId, Item item) {
         auxRequiredItems.put(slotId, item);
         return this;
     }
@@ -191,7 +192,7 @@ public class FormConfig {
      * 为形态赋予技能
      * @param skillId 你注册的技能ID
      */
-    public FormConfig addSkill(ResourceLocation skillId) {
+    public FormConfig addSkill(Identifier skillId) {
         if (!skillIds.contains(skillId)) {
             skillIds.add(skillId);
         }
@@ -208,12 +209,12 @@ public class FormConfig {
 
     //====================内部方法====================
     // 匹配验证
-    public boolean matchesMainSlots(Map<ResourceLocation, ItemStack> driverItems, RiderConfig config) {
+    public boolean matchesMainSlots(Map<Identifier, ItemStack> driverItems, RiderConfig config) {
         // 处理动态形态的情况 - 如果没有特定物品要求，直接返回true
         if (requiredItems.isEmpty() && !allowsEmptyDriver) {
             // 检查驱动器是否为空（跳过辅助槽位）
             boolean hasMainItems = false;
-            for (ResourceLocation slotId : config.getSlotDefinitions().keySet()) {
+            for (Identifier slotId : config.getSlotDefinitions().keySet()) {
                 ItemStack stack = driverItems.get(slotId);
                 if (stack != null && !stack.isEmpty()) {
                     hasMainItems = true;
@@ -227,8 +228,8 @@ public class FormConfig {
         }
 
         // 原有的精确匹配逻辑
-        for (Map.Entry<ResourceLocation, Item> entry : requiredItems.entrySet()) {
-            ResourceLocation slotId = entry.getKey();
+        for (Map.Entry<Identifier, Item> entry : requiredItems.entrySet()) {
+            Identifier slotId = entry.getKey();
             Item requiredItem = entry.getValue();
 
             DriverSlotDefinition slotDef = config.getSlotDefinition(slotId);
@@ -259,7 +260,7 @@ public class FormConfig {
         return true;
     }
 
-    public boolean matchesAuxSlots(Map<ResourceLocation, ItemStack> driverItems, RiderConfig config) {
+    public boolean matchesAuxSlots(Map<Identifier, ItemStack> driverItems, RiderConfig config) {
         if (Config.DEBUG_MODE.get()) {
             RideBattleLib.LOGGER.debug("开始匹配辅助槽位...");
         }
@@ -268,7 +269,7 @@ public class FormConfig {
         if (auxRequiredItems.isEmpty()) {
             // 对于动态形态，只要有辅助物品就应该匹配成功
             boolean hasAuxItems = false;
-            for (ResourceLocation slotId : config.getAuxSlotDefinitions().keySet()) {
+            for (Identifier slotId : config.getAuxSlotDefinitions().keySet()) {
                 ItemStack stack = driverItems.get(slotId);
                 if (stack != null && !stack.isEmpty()) {
                     hasAuxItems = true;
@@ -279,8 +280,8 @@ public class FormConfig {
         }
 
         // 原有的精确匹配逻辑
-        for (Map.Entry<ResourceLocation, Item> entry : auxRequiredItems.entrySet()) {
-            ResourceLocation slotId = entry.getKey();
+        for (Map.Entry<Identifier, Item> entry : auxRequiredItems.entrySet()) {
+            Identifier slotId = entry.getKey();
             Item requiredItem = entry.getValue();
             ItemStack stack = driverItems.get(slotId);
 
@@ -317,7 +318,7 @@ public class FormConfig {
 
 
     //====================Getter方法====================
-    public ResourceLocation getFormId() {
+    public Identifier getFormId() {
         return formId;
     }
 
@@ -349,19 +350,19 @@ public class FormConfig {
         return Collections.unmodifiableList(effects);
     }
 
-    public List<ResourceLocation> getAttributeIds() {
+    public List<Identifier> getAttributeIds() {
         return Collections.unmodifiableList(attributeIds);
     }
 
-    public List<ResourceLocation> getEffectIds() {
+    public List<Identifier> getEffectIds() {
         return Collections.unmodifiableList(effectIds);
     }
 
-    public Map<ResourceLocation, Item> getRequiredItems() {
+    public Map<Identifier, Item> getRequiredItems() {
         return Collections.unmodifiableMap(requiredItems);
     }
 
-    public Map<ResourceLocation, Item> getAuxRequiredItems() {
+    public Map<Identifier, Item> getAuxRequiredItems() {
         return Collections.unmodifiableMap(auxRequiredItems);
     }
 
@@ -381,11 +382,11 @@ public class FormConfig {
         return !auxRequiredItems.isEmpty();
     }
 
-    public List<ResourceLocation> getSkillIds() {
+    public List<Identifier> getSkillIds() {
         return Collections.unmodifiableList(skillIds);
     }
 
-    public ResourceLocation getCurrentSkillId(Player player) {
+    public Identifier getCurrentSkillId(Player player) {
         // 从玩家数据中获取技能索引
         RiderData data = player.getData(RiderAttachments.RIDER_DATA);
         int index = data.getCurrentSkillIndex();
@@ -402,7 +403,7 @@ public class FormConfig {
     /**
      * 检查形态是否包含指定技能
      */
-    public boolean hasSkill(ResourceLocation skillId) {
+    public boolean hasSkill(Identifier skillId) {
         return skillIds.contains(skillId);
     }
 
@@ -412,7 +413,7 @@ public class FormConfig {
      * @param newFormId 新副本的形态ID（可以为null，使用原ID）
      * @return 深度副本FormConfig
      */
-    public FormConfig copy(@Nullable ResourceLocation newFormId) {
+    public FormConfig copy(@Nullable Identifier newFormId) {
         FormConfig copy = new FormConfig(newFormId != null ? newFormId : this.formId);
 
         // 复制所有基础属性
@@ -441,7 +442,7 @@ public class FormConfig {
         return copy;
     }
 
-    public FormConfig copyWithoutItemsAndSkills(@Nullable ResourceLocation newFormId) {
+    public FormConfig copyWithoutItemsAndSkills(@Nullable Identifier newFormId) {
         FormConfig copy = new FormConfig(newFormId != null ? newFormId : this.formId);
 
         // 复制所有基础属性

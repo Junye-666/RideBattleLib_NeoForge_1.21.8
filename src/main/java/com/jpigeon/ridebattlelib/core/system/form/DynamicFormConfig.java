@@ -6,7 +6,7 @@ import com.jpigeon.ridebattlelib.core.system.henshin.RiderConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.helper.TriggerType;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -16,6 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -26,16 +27,16 @@ import java.util.stream.Collectors;
  * 整合了所有动态形态相关功能，支持自定义物品-盔甲槽位映射
  */
 public class DynamicFormConfig extends FormConfig {
-    private final Map<ResourceLocation, ItemStack> driverSnapshot;
+    private final Map<Identifier, ItemStack> driverSnapshot;
     private boolean shouldPause = false;
 
-    private static final Map<ResourceLocation, FormConfig> DYNAMIC_FORMS = Collections.synchronizedMap(new WeakHashMap<>());
-    private static final Map<ResourceLocation, Long> LAST_USED = new HashMap<>();
+    private static final Map<Identifier, FormConfig> DYNAMIC_FORMS = Collections.synchronizedMap(new WeakHashMap<>());
+    private static final Map<Identifier, Long> LAST_USED = new HashMap<>();
     private static final long UNLOAD_DELAY = 10 * 60 * 1000; // 10分钟未使用则卸载
 
     private static final Map<Item, Map<EquipmentSlot, Item>> ITEM_ARMOR_MAP = new HashMap<>();
     private static final Map<String, EquipmentSlot> SLOT_PATTERN_ARMOR_MAPPINGS = new HashMap<>();
-    private static final Map<ResourceLocation, Map<EquipmentSlot, Item>> UNDERSUIT_REGISTRY = new HashMap<>();
+    private static final Map<Identifier, Map<EquipmentSlot, Item>> UNDERSUIT_REGISTRY = new HashMap<>();
     private static final Map<Item, List<MobEffectInstance>> ITEM_EFFECT_MAP = new HashMap<>();
     private static final Map<Item, List<ItemStack>> ITEM_GRANTED_ITEMS = new HashMap<>();
     private final List<AttributeModifier> dynamicAttributes = new ArrayList<>();
@@ -69,7 +70,7 @@ public class DynamicFormConfig extends FormConfig {
         DEFAULT_UNDERSUIT.put(EquipmentSlot.FEET, Items.AIR);
     }
 
-    public DynamicFormConfig(ResourceLocation formId, Map<ResourceLocation, ItemStack> driverItems, RiderConfig config) {
+    public DynamicFormConfig(Identifier formId, Map<Identifier, ItemStack> driverItems, RiderConfig config) {
         super(formId);
         this.driverSnapshot = new HashMap<>(driverItems);
         configureFromItems(config);
@@ -134,12 +135,12 @@ public class DynamicFormConfig extends FormConfig {
                 .addAll(Arrays.asList(effectInstances));
     }
 
-    public static void registerItemEffect(Item item, Holder<MobEffect> effect,
+    public static void registerItemEffect(Item item, Holder<@NotNull MobEffect> effect,
                                           int duration, int amplifier, boolean ambient) {
         registerItemEffects(item, new MobEffectInstance(effect, duration, amplifier, false, ambient));
     }
 
-    public static void registerItemEffect(Item item, Holder<MobEffect> effectHolder) {
+    public static void registerItemEffect(Item item, Holder<@NotNull MobEffect> effectHolder) {
         registerItemEffect(item, effectHolder, 114514, 1, false);
     }
 
@@ -155,7 +156,7 @@ public class DynamicFormConfig extends FormConfig {
     /**
      * 注册骑士的底衣配置
      */
-    public static void registerRiderUndersuit(ResourceLocation riderId,
+    public static void registerRiderUndersuit(Identifier riderId,
                                               Item helmet, Item chestplate,
                                               @Nullable Item leggings, Item boots) {
         Map<EquipmentSlot, Item> undersuit = new EnumMap<>(EquipmentSlot.class);
@@ -170,7 +171,7 @@ public class DynamicFormConfig extends FormConfig {
     /**
      * 注册骑士的底衣配置（使用EnumMap）
      */
-    public static void registerRiderUndersuit(ResourceLocation riderId, Map<EquipmentSlot, Item> undersuit) {
+    public static void registerRiderUndersuit(Identifier riderId, Map<EquipmentSlot, Item> undersuit) {
         UNDERSUIT_REGISTRY.put(riderId, new EnumMap<>(undersuit));
     }
 
@@ -187,7 +188,7 @@ public class DynamicFormConfig extends FormConfig {
     /**
      * 移除骑士的底衣配置
      */
-    public static void removeRiderUndersuit(ResourceLocation riderId) {
+    public static void removeRiderUndersuit(Identifier riderId) {
         UNDERSUIT_REGISTRY.remove(riderId);
     }
 
@@ -213,7 +214,7 @@ public class DynamicFormConfig extends FormConfig {
     /**
      * 获取骑士的底衣配置
      */
-    public static Map<EquipmentSlot, Item> getRiderUndersuit(ResourceLocation riderId) {
+    public static Map<EquipmentSlot, Item> getRiderUndersuit(Identifier riderId) {
         Map<EquipmentSlot, Item> undersuit = UNDERSUIT_REGISTRY.get(riderId);
         if (undersuit != null) {
             return new EnumMap<>(undersuit);
@@ -224,7 +225,7 @@ public class DynamicFormConfig extends FormConfig {
     /**
      * 检查骑士是否注册了底衣配置
      */
-    public static boolean hasRiderUndersuit(ResourceLocation riderId) {
+    public static boolean hasRiderUndersuit(Identifier riderId) {
         return UNDERSUIT_REGISTRY.containsKey(riderId);
     }
 
@@ -234,8 +235,8 @@ public class DynamicFormConfig extends FormConfig {
      * 获取或创建动态形态
      */
     public static FormConfig getOrCreateDynamicForm(Player player, RiderConfig config,
-                                                    Map<ResourceLocation, ItemStack> driverItems) {
-        ResourceLocation formId = generateFormId(config.getRiderId(), driverItems);
+                                                    Map<Identifier, ItemStack> driverItems) {
+        Identifier formId = generateFormId(config.getRiderId(), driverItems);
 
         if (Config.DEBUG_MODE.get()) {
             RideBattleLib.LOGGER.debug("创建动态形态: {}", formId);
@@ -273,7 +274,7 @@ public class DynamicFormConfig extends FormConfig {
     }
 
     private static void scheduleCleanupIfNeeded(Player player) {
-        MinecraftServer server = player.getServer();
+        MinecraftServer server = player.level().getServer();
         if (server != null && server.getTickCount() % 6000 == 0) { // 每5分钟检查一次
             server.execute(DynamicFormConfig::cleanupUnusedForms);
         }
@@ -282,21 +283,21 @@ public class DynamicFormConfig extends FormConfig {
     /**
      * 生成动态形态ID
      */
-    private static ResourceLocation generateFormId(ResourceLocation riderId,
-                                                   Map<ResourceLocation, ItemStack> driverItems) {
+    private static Identifier generateFormId(Identifier riderId,
+                                                   Map<Identifier, ItemStack> driverItems) {
         String baseId = riderId.getPath().replace("kamen_rider_", "");
         Set<String> itemParts = new LinkedHashSet<>();
 
         for (ItemStack stack : driverItems.values()) {
             if (!stack.isEmpty()) {
-                ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+                Identifier itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
                 String trimmedId = trimCommonSuffix(itemId.getPath());
                 itemParts.add(trimmedId);
             }
         }
 
         String formPath = baseId + "_" + String.join("_", itemParts);
-        return ResourceLocation.fromNamespaceAndPath(riderId.getNamespace(), formPath);
+        return Identifier.fromNamespaceAndPath(riderId.getNamespace(), formPath);
     }
 
     private static String trimCommonSuffix(String itemId) {
@@ -316,11 +317,11 @@ public class DynamicFormConfig extends FormConfig {
     public static void cleanupUnusedForms() {
         long now = System.currentTimeMillis();
         synchronized (DYNAMIC_FORMS) {
-            Iterator<Map.Entry<ResourceLocation, FormConfig>> it = DYNAMIC_FORMS.entrySet().iterator();
+            Iterator<Map.Entry<Identifier, FormConfig>> it = DYNAMIC_FORMS.entrySet().iterator();
             int removedCount = 0;
 
             while (it.hasNext()) {
-                Map.Entry<ResourceLocation, FormConfig> entry = it.next();
+                Map.Entry<Identifier, FormConfig> entry = it.next();
                 long lastUsed = LAST_USED.getOrDefault(entry.getKey(), 0L);
 
                 if (now - lastUsed > UNLOAD_DELAY) {
@@ -342,7 +343,7 @@ public class DynamicFormConfig extends FormConfig {
     /**
      * 获取动态形态
      */
-    public static FormConfig getDynamicForm(ResourceLocation formId) {
+    public static FormConfig getDynamicForm(Identifier formId) {
         return DYNAMIC_FORMS.get(formId);
     }
 
@@ -368,8 +369,8 @@ public class DynamicFormConfig extends FormConfig {
         }
 
         // 处理槽位物品
-        for (Map.Entry<ResourceLocation, ItemStack> entry : driverSnapshot.entrySet()) {
-            ResourceLocation slotId = entry.getKey();
+        for (Map.Entry<Identifier, ItemStack> entry : driverSnapshot.entrySet()) {
+            Identifier slotId = entry.getKey();
             ItemStack stack = entry.getValue();
 
             if (!stack.isEmpty()) {
@@ -433,7 +434,7 @@ public class DynamicFormConfig extends FormConfig {
     /**
      * 自动确定盔甲槽位
      */
-    private EquipmentSlot determineArmorSlot(ResourceLocation slotId, Item item) {
+    private EquipmentSlot determineArmorSlot(Identifier slotId, Item item) {
         // 1. 首先检查槽位名称是否包含模式关键词
         String slotPath = slotId.getPath().toLowerCase();
         for (Map.Entry<String, EquipmentSlot> entry : SLOT_PATTERN_ARMOR_MAPPINGS.entrySet()) {
@@ -500,7 +501,7 @@ public class DynamicFormConfig extends FormConfig {
     /**
      * 获取骑士的底衣配置
      */
-    private Map<EquipmentSlot, Item> getUndersuitForRider(ResourceLocation riderId) {
+    private Map<EquipmentSlot, Item> getUndersuitForRider(Identifier riderId) {
         // 优先返回特定骑士的底衣配置
         Map<EquipmentSlot, Item> customUndersuit = UNDERSUIT_REGISTRY.get(riderId);
         if (customUndersuit != null) {
@@ -561,9 +562,9 @@ public class DynamicFormConfig extends FormConfig {
      * 重写获取技能ID的方法，支持动态形态的技能
      */
     @Override
-    public List<ResourceLocation> getSkillIds() {
+    public List<Identifier> getSkillIds() {
         // 动态形态可以合并基础形态的技能
-        List<ResourceLocation> allSkills = new ArrayList<>(super.getSkillIds());
+        List<Identifier> allSkills = new ArrayList<>(super.getSkillIds());
 
         // 可以根据驱动器物品添加额外技能
         // 例如：遍历driverSnapshot，根据物品类型添加技能

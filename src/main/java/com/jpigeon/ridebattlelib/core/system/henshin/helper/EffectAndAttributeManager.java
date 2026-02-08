@@ -10,25 +10,26 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class EffectAndAttributeManager {
     public static final EffectAndAttributeManager INSTANCE = new EffectAndAttributeManager();
 
-    public void applyAttributesAndEffects(Player player, ResourceLocation formId) {
+    public void applyAttributesAndEffects(Player player, Identifier formId) {
         FormConfig form = getFormConfig(player, formId);
         if (form != null) {
             applyAttributesAndEffects(player, form);
         }
     }
 
-    public void removeAttributesAndEffects(Player player, ResourceLocation formId) {
+    public void removeAttributesAndEffects(Player player, Identifier formId) {
         FormConfig form = getFormConfig(player, formId);
         if (form != null) {
             removeAttributesAndEffects(player, form);
@@ -82,7 +83,7 @@ public class EffectAndAttributeManager {
 
     // 属性应用
     private void applyAttributes(Player player, FormConfig form) {
-        Registry<Attribute> attributeRegistry = BuiltInRegistries.ATTRIBUTE;
+        Registry<@NotNull Attribute> attributeRegistry = BuiltInRegistries.ATTRIBUTE;
 
         // 移除可能存在的旧属性
         for (AttributeModifier modifier : form.getAttributes()) {
@@ -124,9 +125,9 @@ public class EffectAndAttributeManager {
         }
 
         // 移除属性修饰符
-        Registry<Attribute> attributeRegistry = BuiltInRegistries.ATTRIBUTE;
+        Registry<@NotNull Attribute> attributeRegistry = BuiltInRegistries.ATTRIBUTE;
         for (AttributeModifier modifier : form.getAttributes()) {
-            Holder<Attribute> holder = attributeRegistry.get(
+            Holder<@NotNull Attribute> holder = attributeRegistry.get(
                     ResourceKey.create(Registries.ATTRIBUTE, modifier.id())
             ).orElse(null);
 
@@ -135,7 +136,7 @@ public class EffectAndAttributeManager {
                 if (instance != null) {
                     instance.removeModifier(modifier.id());
                     if (Config.DEBUG_MODE.get()) {
-                        RideBattleLib.LOGGER.debug("移除属性修饰符: {} -> {}", modifier.id(), holder.unwrapKey().map(ResourceKey::location).orElse(null));
+                        RideBattleLib.LOGGER.debug("移除属性修饰符: {} -> {}", modifier.id(), holder.unwrapKey().map(ResourceKey::registryKey).orElse(null));
                     }
                 }
             }
@@ -143,15 +144,15 @@ public class EffectAndAttributeManager {
 
         // 记录并报告任何残留效果
         if (Config.DEBUG_MODE.get()) {
-            for (Holder<MobEffect> activeEffect : player.getActiveEffectsMap().keySet()) {
+            for (Holder<@NotNull MobEffect> activeEffect : player.getActiveEffectsMap().keySet()) {
                 activeEffect.unwrapKey().ifPresent(key ->
-                        RideBattleLib.LOGGER.debug("移除残留效果: {}", key.location()));
+                        RideBattleLib.LOGGER.debug("移除残留效果: {}", key.registryKey()));
             }
         }
     }
 
     // 辅助方法：获取正确的FormConfig
-    private FormConfig getFormConfig(Player player, ResourceLocation formId) {
+    private FormConfig getFormConfig(Player player, Identifier formId) {
         // 优先从玩家当前骑士获取
         FormConfig form = RiderRegistry.getForm(player, formId);
 

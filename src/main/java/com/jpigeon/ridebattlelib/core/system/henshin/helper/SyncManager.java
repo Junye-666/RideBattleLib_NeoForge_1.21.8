@@ -10,7 +10,7 @@ import com.jpigeon.ridebattlelib.core.system.network.handler.PacketHandler;
 import com.jpigeon.ridebattlelib.core.system.network.packet.DriverDataSyncPacket;
 import com.jpigeon.ridebattlelib.core.system.network.packet.HenshinStateSyncPacket;
 import com.jpigeon.ridebattlelib.core.system.network.packet.TransformedStatePacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
@@ -55,8 +55,8 @@ public class SyncManager {
         RiderConfig config = RiderConfig.findActiveDriverConfig(player);
         if (config == null) return;
 
-        Map<ResourceLocation, ItemStack> mainItems = data.getDriverItems(config.getRiderId());
-        Map<ResourceLocation, ItemStack> auxItems = data.auxDriverItems.getOrDefault(config.getRiderId(), new HashMap<>());
+        Map<Identifier, ItemStack> mainItems = data.getDriverItems(config.getRiderId());
+        Map<Identifier, ItemStack> auxItems = data.auxDriverItems.getOrDefault(config.getRiderId(), new HashMap<>());
 
         PacketHandler.sendToClient(player, new DriverDataSyncPacket(
                 player.getUUID(),

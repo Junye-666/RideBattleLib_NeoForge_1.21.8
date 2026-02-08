@@ -2,7 +2,7 @@ package com.jpigeon.ridebattlelib.api;
 
 import com.jpigeon.ridebattlelib.core.system.henshin.HenshinSystem;
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderConfig;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -16,12 +16,12 @@ public interface IHenshinHelper {
     /**
      * 执行变身，包含设置变身数据
      */
-    void performHenshin(Player player, RiderConfig config, ResourceLocation formId);
+    void performHenshin(Player player, RiderConfig config, Identifier formId);
 
     /**
      * 执行形态切换
      */
-    void performFormSwitch(Player player, ResourceLocation newFormId);
+    void performFormSwitch(Player player, Identifier newFormId);
 
     /**
      * 恢复变身状态 - 使用统一的数据结构
@@ -36,5 +36,5 @@ public interface IHenshinHelper {
     /**
      * 保存变身快照（内部使用）
      */
-    void saveTransformedSnapshot(Player player, RiderConfig config, ResourceLocation formId, Map<EquipmentSlot, ItemStack> originalGear, Map<ResourceLocation, ItemStack> driverSnapshot);
+    void saveTransformedSnapshot(Player player, RiderConfig config, Identifier formId, Map<EquipmentSlot, ItemStack> originalGear, Map<Identifier, ItemStack> driverSnapshot);
 }

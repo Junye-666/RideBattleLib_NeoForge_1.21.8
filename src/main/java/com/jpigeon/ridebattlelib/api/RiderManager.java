@@ -20,7 +20,7 @@ import com.jpigeon.ridebattlelib.core.system.network.packet.*;
 import com.jpigeon.ridebattlelib.core.system.penalty.PenaltySystem;
 import com.jpigeon.ridebattlelib.core.system.skill.SkillSystem;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -78,7 +78,7 @@ public final class RiderManager {
      * @param player 玩家
      * @return 是否成功切换
      */
-    public static boolean switchForm(Player player, ResourceLocation newFormId) {
+    public static boolean switchForm(Player player, Identifier newFormId) {
         if (isTransformed(player) && getCurrentFormId(player) != newFormId) {
             if (Config.DEVELOPER_MODE.get())
                 RideBattleLib.LOGGER.debug("尝试切换玩家{}形态{}", player.getName().getString(), newFormId);
@@ -102,21 +102,21 @@ public final class RiderManager {
      * 插入物品至驱动器
      * 注意：此方法不触发AUTO变身
      */
-    public static void insertItemToSlot(Player player, ResourceLocation slotId, ItemStack stack) {
+    public static void insertItemToSlot(Player player, Identifier slotId, ItemStack stack) {
         PacketHandler.sendToServer(new InsertItemPacket(player.getUUID(), slotId, stack));
     }
 
     /**
      * 快捷方法
      */
-    public static void insertItemToSlot(Player player, ResourceLocation slotId, Item item) {
+    public static void insertItemToSlot(Player player, Identifier slotId, Item item) {
         insertItemToSlot(player, slotId, item.getDefaultInstance());
     }
 
     /**
      * 将单个物品从驱动器中取出
      */
-    public static void extractItemFromSlot(Player player, ResourceLocation slotId) {
+    public static void extractItemFromSlot(Player player, Identifier slotId) {
         if (getItemForSlot(player, slotId).isEmpty()) return;
         if (Config.DEVELOPER_MODE.get())
             RideBattleLib.LOGGER.debug("为玩家{}从槽位{}取出物品", player.getName().getString(), slotId);
@@ -173,7 +173,7 @@ public final class RiderManager {
      * @param skillId 技能ID
      * @return 是否成功触发
      */
-    public static boolean triggerSkill(Player player, ResourceLocation skillId) {
+    public static boolean triggerSkill(Player player, Identifier skillId) {
         return SkillSystem.triggerSkill(player, skillId);
     }
 
@@ -185,7 +185,7 @@ public final class RiderManager {
      * @param type    触发类型
      * @return 是否成功触发
      */
-    public static boolean triggerSkill(Player player, ResourceLocation skillId, SkillEvent.SkillTriggerType type) {
+    public static boolean triggerSkill(Player player, Identifier skillId, SkillEvent.SkillTriggerType type) {
         return SkillSystem.triggerSkill(player, skillId, type);
     }
 
@@ -197,7 +197,7 @@ public final class RiderManager {
      * @param skillId 技能ID
      * @return 是否成功触发
      */
-    public static boolean triggerSkill(Player player, ResourceLocation formId, ResourceLocation skillId) {
+    public static boolean triggerSkill(Player player, Identifier formId, Identifier skillId) {
         return triggerSkill(player, formId, skillId, SkillEvent.SkillTriggerType.OTHER);
     }
 
@@ -210,8 +210,8 @@ public final class RiderManager {
      * @param type    触发类型
      * @return 是否成功触发
      */
-    public static boolean triggerSkill(Player player, ResourceLocation formId,
-                                       ResourceLocation skillId, SkillEvent.SkillTriggerType type) {
+    public static boolean triggerSkill(Player player, Identifier formId,
+                                       Identifier skillId, SkillEvent.SkillTriggerType type) {
         return SkillSystem.triggerSkill(player, formId, skillId, type);
     }
 
@@ -221,7 +221,7 @@ public final class RiderManager {
      * @param player 玩家
      * @return 技能ID列表，无技能则返回空列表
      */
-    public static List<ResourceLocation> getCurrentFormSkills(Player player) {
+    public static List<Identifier> getCurrentFormSkills(Player player) {
         return SkillSystem.getCurrentFormSkills(player);
     }
 
@@ -264,7 +264,7 @@ public final class RiderManager {
      * @return 玩家当前形态Id
      */
     @Nullable
-    public static ResourceLocation getCurrentFormId(Player player) {
+    public static Identifier getCurrentFormId(Player player) {
         HenshinSystem.TransformedData data = HenshinSystem.INSTANCE.getTransformedData(player);
         return data != null ? data.formId() : null;
     }
@@ -276,7 +276,7 @@ public final class RiderManager {
      * @return 通过Id匹配的配置
      */
     @Nullable
-    public static FormConfig getFormConfig(Player player, ResourceLocation formId) {
+    public static FormConfig getFormConfig(Player player, Identifier formId) {
         // 优先从玩家当前骑士获取
         FormConfig form = RiderRegistry.getForm(player, formId);
 
@@ -299,7 +299,7 @@ public final class RiderManager {
      * @return 当前缓冲形态Id
      */
     @Nullable
-    public static ResourceLocation getPendingForm(Player player) {
+    public static Identifier getPendingForm(Player player) {
         RiderData data = player.getData(RiderAttachments.RIDER_DATA);
         return data.getPendingFormId();
     }
@@ -310,7 +310,7 @@ public final class RiderManager {
      *
      * @return 玩家当前驱动器内物品列表
      */
-    public static Map<ResourceLocation, ItemStack> getDriverItems(Player player) {
+    public static Map<Identifier, ItemStack> getDriverItems(Player player) {
         return DriverSystem.INSTANCE.getDriverItems(player);
     }
 
@@ -318,7 +318,7 @@ public final class RiderManager {
      * 获取当前选中的技能ID
      */
     @Nullable
-    public static ResourceLocation getCurrentSkill(Player player) {
+    public static Identifier getCurrentSkill(Player player) {
         return SkillSystem.getCurrentSkillId(player);
     }
 
@@ -327,7 +327,7 @@ public final class RiderManager {
     /**
      * 检查玩家是否为特定骑士
      */
-    public static boolean isSpecificRider(Player player, ResourceLocation riderId) {
+    public static boolean isSpecificRider(Player player, Identifier riderId) {
         RiderConfig config = getActiveRiderConfig(player);
         return config != null && config.getRiderId().equals(riderId);
     }
@@ -339,8 +339,8 @@ public final class RiderManager {
      * @param formId 形态ID
      * @return 是否变身为该形态
      */
-    public static boolean isSpecificForm(Player player, ResourceLocation formId) {
-        ResourceLocation currentForm = getCurrentFormId(player);
+    public static boolean isSpecificForm(Player player, Identifier formId) {
+        Identifier currentForm = getCurrentFormId(player);
         return currentForm != null && currentForm.equals(formId);
     }
 
@@ -369,7 +369,7 @@ public final class RiderManager {
     /**
      * 检查玩家是否装备了特定骑士的驱动器
      */
-    public static boolean hasSpecificDriverEquipped(Player player, ResourceLocation riderId) {
+    public static boolean hasSpecificDriverEquipped(Player player, Identifier riderId) {
         RiderConfig config = RiderConfig.findActiveDriverConfig(player);
         return config != null && config.getRiderId().equals(riderId);
     }
@@ -401,7 +401,7 @@ public final class RiderManager {
     public static boolean hasItemInDriver(Player player, Item item) {
         if (player == null || item == null) return false;
 
-        Map<ResourceLocation, ItemStack> driverItems = getDriverItems(player);
+        Map<Identifier, ItemStack> driverItems = getDriverItems(player);
 
         for (ItemStack stack : driverItems.values()) {
             if (!stack.isEmpty() && stack.is(item)) {
@@ -429,7 +429,7 @@ public final class RiderManager {
     public static boolean hasItemInDriver(Player player, ItemStack itemStack) {
         if (player == null || itemStack.isEmpty()) return false;
 
-        Map<ResourceLocation, ItemStack> driverItems = getDriverItems(player);
+        Map<Identifier, ItemStack> driverItems = getDriverItems(player);
 
         for (ItemStack stack : driverItems.values()) {
             if (ItemStack.isSameItemSameComponents(stack, itemStack)) {
@@ -451,10 +451,10 @@ public final class RiderManager {
      * @param item   要检查的物品
      * @return 如果指定槽位中存在该物品则返回true
      */
-    public static boolean hasItemInSlot(Player player, ResourceLocation slotId, Item item) {
+    public static boolean hasItemInSlot(Player player, Identifier slotId, Item item) {
         if (player == null || slotId == null || item == null) return false;
 
-        Map<ResourceLocation, ItemStack> driverItems = getDriverItems(player);
+        Map<Identifier, ItemStack> driverItems = getDriverItems(player);
         ItemStack stackInSlot = driverItems.get(slotId);
 
         if (stackInSlot != null && !stackInSlot.isEmpty() && stackInSlot.is(item)) {
@@ -480,10 +480,10 @@ public final class RiderManager {
      * @param itemStack 要检查的物品堆栈（包含NBT）
      * @return 如果指定槽位中存在匹配的物品则返回true
      */
-    public static boolean hasItemInSlot(Player player, ResourceLocation slotId, ItemStack itemStack) {
+    public static boolean hasItemInSlot(Player player, Identifier slotId, ItemStack itemStack) {
         if (player == null || slotId == null || itemStack.isEmpty()) return false;
 
-        Map<ResourceLocation, ItemStack> driverItems = getDriverItems(player);
+        Map<Identifier, ItemStack> driverItems = getDriverItems(player);
         ItemStack stackInSlot = driverItems.get(slotId);
 
         if (stackInSlot != null && ItemStack.isSameItemSameComponents(stackInSlot, itemStack)) {
@@ -504,10 +504,10 @@ public final class RiderManager {
      * @param slotId 槽位ID
      * @return 槽位中的物品堆栈，如果为空则返回ItemStack.EMPTY
      */
-    public static ItemStack getItemForSlot(Player player, ResourceLocation slotId) {
+    public static ItemStack getItemForSlot(Player player, Identifier slotId) {
         if (player == null || slotId == null) return ItemStack.EMPTY;
 
-        Map<ResourceLocation, ItemStack> driverItems = getDriverItems(player);
+        Map<Identifier, ItemStack> driverItems = getDriverItems(player);
         ItemStack stack = driverItems.get(slotId);
 
         return stack != null ? stack : ItemStack.EMPTY;
@@ -522,7 +522,7 @@ public final class RiderManager {
     public static boolean isDriverEmpty(Player player) {
         if (player == null) return true;
 
-        Map<ResourceLocation, ItemStack> driverItems = getDriverItems(player);
+        Map<Identifier, ItemStack> driverItems = getDriverItems(player);
 
         if (driverItems.isEmpty()) return true;
 
@@ -565,7 +565,7 @@ public final class RiderManager {
      * 现在只在服务端调用，因为所有逻辑都在服务端执行
      */
     public static void playPublicSound(Player player, SoundEvent sound, SoundSource category, float volume, float pitch) {
-        if (!player.level().isClientSide) {
+        if (!player.level().isClientSide()) {
             // 服务端：广播给所有玩家
             if (Config.DEVELOPER_MODE.get()) RideBattleLib.LOGGER.debug("播放音效{}", sound);
             player.level().playSound(null, player, sound, category, volume, pitch);

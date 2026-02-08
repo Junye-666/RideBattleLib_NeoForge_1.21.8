@@ -76,7 +76,8 @@ public class PacketHandler {
                 .playToClient(HenshinStateSyncPacket.TYPE, HenshinStateSyncPacket.STREAM_CODEC,
                         (payload, context) ->
                         {
-                            if (context.player() instanceof ServerPlayer serverPlayer) {
+                            Player target = context.player().level().getPlayerByUUID(payload.playerId());
+                            if (target instanceof ServerPlayer serverPlayer) {
                                 SyncManager.INSTANCE.syncTransformedState(serverPlayer);
                             }
                         })

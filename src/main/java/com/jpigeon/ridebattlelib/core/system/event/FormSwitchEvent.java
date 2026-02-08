@@ -1,6 +1,6 @@
 package com.jpigeon.ridebattlelib.core.system.event;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.ICancellableEvent;
@@ -10,23 +10,23 @@ import net.neoforged.bus.api.ICancellableEvent;
  */
 public class FormSwitchEvent extends Event {
     private final Player player;
-    private final ResourceLocation oldFormId;
-    private final ResourceLocation newFormId;
+    private final Identifier oldFormId;
+    private final Identifier newFormId;
 
-    public FormSwitchEvent(Player player, ResourceLocation oldFormId, ResourceLocation newFormId) {
+    public FormSwitchEvent(Player player, Identifier oldFormId, Identifier newFormId) {
         this.player = player;
         this.oldFormId = oldFormId;
         this.newFormId = newFormId;
     }
 
     public static class Pre extends FormSwitchEvent implements ICancellableEvent {
-        public Pre(Player player, ResourceLocation oldFormId, ResourceLocation newFormId) {
+        public Pre(Player player, Identifier oldFormId, Identifier newFormId) {
             super(player, oldFormId, newFormId);
         }
     }
 
     public static class Post extends FormSwitchEvent {
-        public Post(Player player, ResourceLocation oldFormId, ResourceLocation newFormId) {
+        public Post(Player player, Identifier oldFormId, Identifier newFormId) {
             super(player, oldFormId, newFormId);
         }
     }
@@ -36,11 +36,11 @@ public class FormSwitchEvent extends Event {
         return player;
     }
 
-    public ResourceLocation getOldFormId() {
+    public Identifier getOldFormId() {
         return oldFormId;
     }
 
-    public ResourceLocation getNewFormId() {
+    public Identifier getNewFormId() {
         return newFormId;
     }
 }

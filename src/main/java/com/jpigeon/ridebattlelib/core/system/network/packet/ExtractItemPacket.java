@@ -5,25 +5,25 @@ import com.jpigeon.ridebattlelib.core.system.network.handler.UUIDStreamCodec;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public record ExtractItemPacket(UUID playerId, ResourceLocation slotId
+public record ExtractItemPacket(UUID playerId, Identifier slotId
 ) implements CustomPacketPayload {
-    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RideBattleLib.MODID, "extract_item");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(RideBattleLib.MODID, "extract_item");
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, ExtractItemPacket> STREAM_CODEC =
+    public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull ExtractItemPacket> STREAM_CODEC =
             StreamCodec.composite(
                     UUIDStreamCodec.INSTANCE,
                     ExtractItemPacket::playerId,
-                    ResourceLocation.STREAM_CODEC,
+                    Identifier.STREAM_CODEC,
                     ExtractItemPacket::slotId,
                     ExtractItemPacket::new
             );
 
-    public static final Type<ExtractItemPacket> TYPE = new Type<>(ID);
+    public static final Type<@NotNull ExtractItemPacket> TYPE = new Type<>(ID);
 
     @Override
     public @NotNull Type<?> type() {

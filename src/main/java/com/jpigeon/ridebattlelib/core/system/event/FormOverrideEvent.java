@@ -1,6 +1,6 @@
 package com.jpigeon.ridebattlelib.core.system.event;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.Event;
@@ -14,11 +14,11 @@ import java.util.Map;
  */
 public class FormOverrideEvent extends Event implements ICancellableEvent {
     private final Player player;
-    private final Map<ResourceLocation, ItemStack> driverItems;
-    private final ResourceLocation currentForm;
-    private ResourceLocation overrideForm;
+    private final Map<Identifier, ItemStack> driverItems;
+    private final Identifier currentForm;
+    private Identifier overrideForm;
 
-    public FormOverrideEvent(Player player, Map<ResourceLocation, ItemStack> driverItems, ResourceLocation currentForm) {
+    public FormOverrideEvent(Player player, Map<Identifier, ItemStack> driverItems, Identifier currentForm) {
         this.player = player;
         this.driverItems = Collections.unmodifiableMap(driverItems);
         this.currentForm = currentForm;
@@ -33,19 +33,19 @@ public class FormOverrideEvent extends Event implements ICancellableEvent {
      * 强制覆盖形态
      * @param overrideForm 变身时强制更改至的形态
      */
-    public void overrideForm(ResourceLocation overrideForm) {
+    public void overrideForm(Identifier overrideForm) {
         this.overrideForm = overrideForm;
     }
 
-    public Map<ResourceLocation, ItemStack> getDriverItems() {
+    public Map<Identifier, ItemStack> getDriverItems() {
         return driverItems;
     }
 
-    public ResourceLocation getCurrentForm() {
+    public Identifier getCurrentForm() {
         return currentForm;
     }
 
-    public ResourceLocation getOverrideForm() {
+    public Identifier getOverrideForm() {
         return overrideForm;
     }
 }

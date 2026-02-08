@@ -1,7 +1,7 @@
 package com.jpigeon.ridebattlelib.core.system.event;
 
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderConfig;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -14,11 +14,11 @@ import net.neoforged.bus.api.ICancellableEvent;
  */
 public class SlotExtractionEvent extends Event {
     private final Player player;
-    private final ResourceLocation slotId;
+    private final Identifier slotId;
     private ItemStack extractedStack;
     private final RiderConfig config;
 
-    public SlotExtractionEvent(Player player, ResourceLocation slotId, ItemStack extractedStack, RiderConfig config) {
+    public SlotExtractionEvent(Player player, Identifier slotId, ItemStack extractedStack, RiderConfig config) {
         this.player = player;
         this.slotId = slotId;
         this.extractedStack = extractedStack;
@@ -47,7 +47,7 @@ public class SlotExtractionEvent extends Event {
         return player;
     }
 
-    public ResourceLocation getSlotId() {
+    public Identifier getSlotId() {
         return slotId;
     }
 
@@ -62,13 +62,13 @@ public class SlotExtractionEvent extends Event {
      * 可取消取出（卡里面拔不出来了）
      */
     public static class Pre extends SlotExtractionEvent implements ICancellableEvent {
-        public Pre(Player player, ResourceLocation slotId, ItemStack extractedStack, RiderConfig config) {
+        public Pre(Player player, Identifier slotId, ItemStack extractedStack, RiderConfig config) {
             super(player, slotId, extractedStack, config);
         }
     }
 
     public static class Post extends SlotExtractionEvent {
-        public Post(Player player, ResourceLocation slotId, ItemStack extractedStack, RiderConfig config) {
+        public Post(Player player, Identifier slotId, ItemStack extractedStack, RiderConfig config) {
             super(player, slotId, extractedStack, config);
         }
     }

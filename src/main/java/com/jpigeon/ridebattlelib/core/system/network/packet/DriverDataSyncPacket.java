@@ -5,7 +5,7 @@ import com.jpigeon.ridebattlelib.core.system.network.handler.UUIDStreamCodec;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,13 +15,13 @@ import java.util.UUID;
 
 public record DriverDataSyncPacket(
         UUID playerId,
-        Map<ResourceLocation, ItemStack> mainItems,
-        Map<ResourceLocation, ItemStack> auxItems
+        Map<Identifier, ItemStack> mainItems,
+        Map<Identifier, ItemStack> auxItems
 ) implements CustomPacketPayload {
 
-    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RideBattleLib.MODID, "driver_sync");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(RideBattleLib.MODID, "driver_sync");
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, DriverDataSyncPacket> STREAM_CODEC =
+    public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull DriverDataSyncPacket> STREAM_CODEC =
             StreamCodec.composite(
                     UUIDStreamCodec.INSTANCE,
                     DriverDataSyncPacket::playerId,
@@ -32,20 +32,20 @@ public record DriverDataSyncPacket(
                     DriverDataSyncPacket::new
             );
 
-    private static StreamCodec<RegistryFriendlyByteBuf, Map<ResourceLocation, ItemStack>> createMapCodec() {
+    private static StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull Map<Identifier, ItemStack>> createMapCodec() {
         return StreamCodec.of(
                 (buf, map) -> {
                     buf.writeVarInt(map.size());
-                    for (Map.Entry<ResourceLocation, ItemStack> entry : map.entrySet()) {
-                        ResourceLocation.STREAM_CODEC.encode(buf, entry.getKey());
+                    for (Map.Entry<Identifier, ItemStack> entry : map.entrySet()) {
+                        Identifier.STREAM_CODEC.encode(buf, entry.getKey());
                         ItemStack.STREAM_CODEC.encode(buf, entry.getValue());
                     }
                 },
                 buf -> {
-                    Map<ResourceLocation, ItemStack> map = new HashMap<>();
+                    Map<Identifier, ItemStack> map = new HashMap<>();
                     int size = buf.readVarInt();
                     for (int i = 0; i < size; i++) {
-                        ResourceLocation key = ResourceLocation.STREAM_CODEC.decode(buf);
+                        Identifier key = Identifier.STREAM_CODEC.decode(buf);
                         ItemStack value = ItemStack.STREAM_CODEC.decode(buf);
                         map.put(key, value);
                     }
@@ -54,7 +54,7 @@ public record DriverDataSyncPacket(
         );
     }
 
-    public static final Type<DriverDataSyncPacket> TYPE = new Type<>(ID);
+    public static final Type<@NotNull DriverDataSyncPacket> TYPE = new Type<>(ID);
 
     @Override
     public @NotNull Type<?> type() { return TYPE; }

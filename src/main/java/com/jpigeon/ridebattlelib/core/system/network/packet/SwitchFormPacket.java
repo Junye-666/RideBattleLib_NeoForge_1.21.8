@@ -5,25 +5,25 @@ import com.jpigeon.ridebattlelib.core.system.network.handler.UUIDStreamCodec;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
 
-public record SwitchFormPacket(UUID playerId, ResourceLocation formId) implements CustomPacketPayload {
-    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RideBattleLib.MODID, "switch_form");
+public record SwitchFormPacket(UUID playerId, Identifier formId) implements CustomPacketPayload {
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(RideBattleLib.MODID, "switch_form");
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, SwitchFormPacket> STREAM_CODEC =
+    public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull SwitchFormPacket> STREAM_CODEC =
             StreamCodec.composite(
                     UUIDStreamCodec.INSTANCE,
                     SwitchFormPacket::playerId,
-                    ResourceLocation.STREAM_CODEC,
+                    Identifier.STREAM_CODEC,
                     SwitchFormPacket::formId,
                     SwitchFormPacket::new
             );
 
-    public static final Type<SwitchFormPacket> TYPE = new Type<>(ID);
+    public static final Type<@NotNull SwitchFormPacket> TYPE = new Type<>(ID);
 
     @Override
     public @NotNull Type<?> type() { return TYPE; }

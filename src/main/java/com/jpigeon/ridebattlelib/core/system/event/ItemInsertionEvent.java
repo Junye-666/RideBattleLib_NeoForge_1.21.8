@@ -1,7 +1,7 @@
 package com.jpigeon.ridebattlelib.core.system.event;
 
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderConfig;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -13,11 +13,11 @@ import net.neoforged.bus.api.ICancellableEvent;
  */
 public class ItemInsertionEvent extends Event {
     private final Player player;
-    private final ResourceLocation slotId;
+    private final Identifier slotId;
     private ItemStack stack;
     private final RiderConfig config;
 
-    public ItemInsertionEvent(Player player, ResourceLocation slotId, ItemStack stack, RiderConfig config) {
+    public ItemInsertionEvent(Player player, Identifier slotId, ItemStack stack, RiderConfig config) {
         this.player = player;
         this.slotId = slotId;
         this.stack = stack;
@@ -25,13 +25,13 @@ public class ItemInsertionEvent extends Event {
     }
 
     public static class Pre extends ItemInsertionEvent implements ICancellableEvent {
-        public Pre(Player player, ResourceLocation slotId, ItemStack stack, RiderConfig config) {
+        public Pre(Player player, Identifier slotId, ItemStack stack, RiderConfig config) {
             super(player, slotId, stack, config);
         }
     }
 
     public static class Post extends ItemInsertionEvent {
-        public Post(Player player, ResourceLocation slotId, ItemStack stack, RiderConfig config) {
+        public Post(Player player, Identifier slotId, ItemStack stack, RiderConfig config) {
             super(player, slotId, stack, config);
         }
     }
@@ -59,7 +59,7 @@ public class ItemInsertionEvent extends Event {
         return player;
     }
 
-    public ResourceLocation getSlotId() {
+    public Identifier getSlotId() {
         return slotId;
     }
 

@@ -9,7 +9,7 @@ import com.jpigeon.ridebattlelib.core.system.event.FormOverrideEvent;
 import com.jpigeon.ridebattlelib.core.system.form.DynamicFormConfig;
 import com.jpigeon.ridebattlelib.core.system.form.FormConfig;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -19,6 +19,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.common.NeoForge;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -32,27 +33,27 @@ import java.util.*;
  * 需通过 RiderRegistry.registerRider() 注册。
  */
 public class RiderConfig {
-    private final ResourceLocation riderId;
+    private final Identifier riderId;
     private Item driverItem = Items.AIR;
     private Item auxDriverItem = Items.AIR;
     private EquipmentSlot driverSlot = EquipmentSlot.LEGS;
     private EquipmentSlot auxDriverSlot = EquipmentSlot.OFFHAND;
     private Item triggerItem = Items.AIR;
-    private ResourceLocation baseFormId;
-    private final Map<ResourceLocation, DriverSlotDefinition> slotDefinitions = new HashMap<>();
-    private final Map<ResourceLocation, DriverSlotDefinition> auxSlotDefinitions = new HashMap<>();
-    private final Set<ResourceLocation> requiredSlots = new HashSet<>();
-    private final Set<ResourceLocation> auxRequiredSlots = new HashSet<>();
-    final Map<ResourceLocation, FormConfig> forms = new HashMap<>();
+    private Identifier baseFormId;
+    private final Map<Identifier, DriverSlotDefinition> slotDefinitions = new HashMap<>();
+    private final Map<Identifier, DriverSlotDefinition> auxSlotDefinitions = new HashMap<>();
+    private final Set<Identifier> requiredSlots = new HashSet<>();
+    private final Set<Identifier> auxRequiredSlots = new HashSet<>();
+    final Map<Identifier, FormConfig> forms = new HashMap<>();
     private final List<AttributeModifier> baseAttributes = new ArrayList<>();
     private final List<MobEffectInstance> baseEffects = new ArrayList<>();
     private boolean allowDynamicForms = false;
 
     /**
      * 初始化时需要传入骑士Id
-     * @param riderId ResourceLocation
+     * @param riderId Identifier
      */
-    public RiderConfig(ResourceLocation riderId) {
+    public RiderConfig(Identifier riderId) {
         this.riderId = riderId;
     }
 
@@ -93,7 +94,7 @@ public class RiderConfig {
     /**
      * 添加主驱动器槽位
      */
-    public RiderConfig addMainDriverSlot(ResourceLocation slotId, List<Item> allowedItems, boolean isRequired, boolean allowReplace) {
+    public RiderConfig addMainDriverSlot(Identifier slotId, List<Item> allowedItems, boolean isRequired, boolean allowReplace) {
         slotDefinitions.put(slotId,
                 new DriverSlotDefinition(allowedItems, null, allowReplace, false, isRequired));
         if (isRequired) {
@@ -105,7 +106,7 @@ public class RiderConfig {
     /**
      * 添加辅助驱动器上的槽位
      */
-    public RiderConfig addAuxDriverSlot(ResourceLocation slotId, List<Item> allowedItems, boolean isRequired, boolean allowReplace) {
+    public RiderConfig addAuxDriverSlot(Identifier slotId, List<Item> allowedItems, boolean isRequired, boolean allowReplace) {
         auxSlotDefinitions.put(slotId, new DriverSlotDefinition(allowedItems, null, allowReplace, true, isRequired));
         if (isRequired) {
             auxRequiredSlots.add(slotId);
@@ -137,7 +138,7 @@ public class RiderConfig {
      * 设置基础形态
      * @param formId 你注册形态Config中的形态ID
      */
-    public void setBaseForm(ResourceLocation formId) {
+    public void setBaseForm(Identifier formId) {
         if (forms.containsKey(formId)) {
             baseFormId = formId;
         }
@@ -147,7 +148,7 @@ public class RiderConfig {
     /**
      * 添加骑士基础属性修饰符（动态形态时的统一修饰符）
       */
-    public RiderConfig addBaseAttribute(ResourceLocation attributeId, double amount,
+    public RiderConfig addBaseAttribute(Identifier attributeId, double amount,
                                         AttributeModifier.Operation operation) {
         baseAttributes.add(new AttributeModifier(attributeId, amount, operation));
         return this;
@@ -156,7 +157,7 @@ public class RiderConfig {
     /**
      * 添加基础效果（动态形态时的统一效果）
      */
-    public RiderConfig addBaseEffect(Holder<MobEffect> effect, int duration,
+    public RiderConfig addBaseEffect(Holder<@NotNull MobEffect> effect, int duration,
                                      int amplifier, boolean hideParticles) {
         baseEffects.add(new MobEffectInstance(effect, duration, amplifier, false, !hideParticles));
         return this;
@@ -165,7 +166,7 @@ public class RiderConfig {
     /**
      * 快速方法
      */
-    public RiderConfig addBaseEffect(Holder<MobEffect> effect, int amplifier){
+    public RiderConfig addBaseEffect(Holder<@NotNull MobEffect> effect, int amplifier){
         return addBaseEffect(effect, 114514, amplifier, true);
     }
 
@@ -179,7 +180,7 @@ public class RiderConfig {
 
     //====================内部方法====================
     // 形态匹配
-    public ResourceLocation matchForm(Player player, Map<ResourceLocation, ItemStack> driverItems) {
+    public Identifier matchForm(Player player, Map<Identifier, ItemStack> driverItems) {
         RiderConfig config = RiderConfig.findActiveDriverConfig(player);
         if (config == null) return null;
         FormOverrideEvent overrideEvent = new FormOverrideEvent(player, driverItems, null);
@@ -190,7 +191,7 @@ public class RiderConfig {
             return null;
         }
 
-        ResourceLocation overrideForm = overrideEvent.getOverrideForm();
+        Identifier overrideForm = overrideEvent.getOverrideForm();
         if (overrideForm != null) {
             RideBattleLib.LOGGER.debug("形态被覆盖为: {}", overrideForm);
             return overrideForm;
@@ -215,7 +216,7 @@ public class RiderConfig {
 
 
         // 先检查是否所有“必需槽位”都有有效物品
-        for (ResourceLocation slotId : requiredSlots) {
+        for (Identifier slotId : requiredSlots) {
             DriverSlotDefinition slot = getSlotDefinition(slotId);
             if (slot == null) continue;
 
@@ -229,7 +230,7 @@ public class RiderConfig {
         }
 
         // 检查辅助必需槽位
-        for (ResourceLocation slotId : auxRequiredSlots) {
+        for (Identifier slotId : auxRequiredSlots) {
             DriverSlotDefinition slot = getAuxSlotDefinition(slotId);
             if (slot == null) continue;
 
@@ -263,7 +264,7 @@ public class RiderConfig {
             }
 
             if (mainMatches && auxMatches) {
-                ResourceLocation formId = formConfig.getFormId();
+                Identifier formId = formConfig.getFormId();
                 if (Config.DEBUG_MODE.get()) {
                     RideBattleLib.LOGGER.debug("匹配到的形态ID: {}", formId);
                 }
@@ -359,8 +360,8 @@ public class RiderConfig {
      * 快捷获取FormConfig
      */
     public FormConfig getActiveFormConfig(Player player) {
-        Map<ResourceLocation, ItemStack> driverItems = DriverSystem.INSTANCE.getDriverItems(player);
-        ResourceLocation formId = matchForm(player, driverItems);
+        Map<Identifier, ItemStack> driverItems = DriverSystem.INSTANCE.getDriverItems(player);
+        Identifier formId = matchForm(player, driverItems);
 
         // 优先检查预设形态
         if (forms.containsKey(formId)) {
@@ -373,7 +374,7 @@ public class RiderConfig {
 
 
     //获取骑士Id
-    public ResourceLocation getRiderId() {
+    public Identifier getRiderId() {
         return riderId;
     }
 
@@ -397,26 +398,26 @@ public class RiderConfig {
     }
 
     //获取必要槽位列表
-    public Set<ResourceLocation> getRequiredSlots() {
+    public Set<Identifier> getRequiredSlots() {
         return Collections.unmodifiableSet(requiredSlots);
     }
 
     //获取槽位定义
-    public DriverSlotDefinition getSlotDefinition(ResourceLocation slotId) {
+    public DriverSlotDefinition getSlotDefinition(Identifier slotId) {
         return slotDefinitions.get(slotId);
     }
 
     //获取所有槽位定义的不可修改视图
-    public Map<ResourceLocation, DriverSlotDefinition> getSlotDefinitions() {
+    public Map<Identifier, DriverSlotDefinition> getSlotDefinitions() {
         return Collections.unmodifiableMap(slotDefinitions);
     }
 
     // 添加形态获取方法
-    public FormConfig getForms(ResourceLocation formId) {
+    public FormConfig getForms(Identifier formId) {
         return forms.get(formId);
     }
 
-    public Map<ResourceLocation, FormConfig> getForms(){
+    public Map<Identifier, FormConfig> getForms(){
         return forms;
     }
 
@@ -424,16 +425,16 @@ public class RiderConfig {
         return this.getForms().containsValue(formConfig);
     }
 
-    public boolean includesFormId(ResourceLocation formId) {
+    public boolean includesFormId(Identifier formId) {
         return this.getForms().containsKey(formId);
     }
 
-    public ResourceLocation getBaseFormId() {
+    public Identifier getBaseFormId() {
         return baseFormId;
     }
 
     // 驱动器是否为空
-    private boolean isDriverEmpty(Map<ResourceLocation, ItemStack> driverItems) {
+    private boolean isDriverEmpty(Map<Identifier, ItemStack> driverItems) {
         if (driverItems.isEmpty()) return true;
         for (ItemStack stack : driverItems.values()) {
             if (!stack.isEmpty()) return false;
@@ -447,8 +448,8 @@ public class RiderConfig {
             HenshinSystem.TransformedData transformedData = HenshinSystem.INSTANCE.getTransformedData(player);
             if (transformedData != null && transformedData.config().getRiderId().equals(this.getRiderId())) {
                 // 检查变身时的驱动器快照中是否有辅助槽位物品
-                Map<ResourceLocation, ItemStack> driverSnapshot = transformedData.driverSnapshot();
-                for (ResourceLocation auxSlotId : getAuxSlotDefinitions().keySet()) {
+                Map<Identifier, ItemStack> driverSnapshot = transformedData.driverSnapshot();
+                for (Identifier auxSlotId : getAuxSlotDefinitions().keySet()) {
                     if (driverSnapshot.containsKey(auxSlotId) && !driverSnapshot.get(auxSlotId).isEmpty()) {
                         return true;
                     }
@@ -460,12 +461,12 @@ public class RiderConfig {
         return isAuxDriverEquippedByPlayer(player);
     }
 
-    public DriverSlotDefinition getAuxSlotDefinition(ResourceLocation slotId) {
+    public DriverSlotDefinition getAuxSlotDefinition(Identifier slotId) {
         return auxSlotDefinitions.get(slotId);
     }
 
     // 获取所有辅助驱动器槽位
-    public Map<ResourceLocation, DriverSlotDefinition> getAuxSlotDefinitions() {
+    public Map<Identifier, DriverSlotDefinition> getAuxSlotDefinitions() {
         return Collections.unmodifiableMap(auxSlotDefinitions);
     }
 

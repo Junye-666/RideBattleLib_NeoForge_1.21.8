@@ -3,7 +3,7 @@ package com.jpigeon.ridebattlelib.core.system.henshin;
 import com.jpigeon.ridebattlelib.Config;
 import com.jpigeon.ridebattlelib.RideBattleLib;
 import com.jpigeon.ridebattlelib.core.system.form.FormConfig;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.*;
@@ -12,10 +12,10 @@ import java.util.*;
  * 理解为管理所有被注册骑士的列表
  */
 public class RiderRegistry {
-    private static final Map<ResourceLocation, RiderConfig> RIDERS = new HashMap<>();
-    private static final Map<ResourceLocation, FormConfig> FORMS = new HashMap<>();
+    private static final Map<Identifier, RiderConfig> RIDERS = new HashMap<>();
+    private static final Map<Identifier, FormConfig> FORMS = new HashMap<>();
     // 添加映射：形态ID -> 所属骑士ID列表（一个形态可能被多个骑士使用）
-    private static final Map<ResourceLocation, Set<ResourceLocation>> FORM_TO_RIDERS = new HashMap<>();
+    private static final Map<Identifier, Set<Identifier>> FORM_TO_RIDERS = new HashMap<>();
 
     public static void registerRider(RiderConfig config) {
         RIDERS.put(config.getRiderId(), config);
@@ -27,8 +27,8 @@ public class RiderRegistry {
     }
 
     // 为特定骑士注册形态
-    private static void registerFormForRider(FormConfig form, ResourceLocation riderId) {
-        ResourceLocation formId = form.getFormId();
+    private static void registerFormForRider(FormConfig form, Identifier riderId) {
+        Identifier formId = form.getFormId();
         FORMS.put(formId, form);
 
         FORM_TO_RIDERS.computeIfAbsent(formId, k -> new HashSet<>()).add(riderId);
@@ -40,7 +40,7 @@ public class RiderRegistry {
     }
 
     // 获取形态配置（优先检查玩家当前骑士）
-    public static FormConfig getForm(Player player, ResourceLocation formId) {
+    public static FormConfig getForm(Player player, Identifier formId) {
         if (player == null) {
             return getForm(formId); // 降级到基础方法
         }
@@ -63,23 +63,23 @@ public class RiderRegistry {
     }
 
     // 原有的基础方法（向后兼容）
-    public static FormConfig getForm(ResourceLocation formId) {
+    public static FormConfig getForm(Identifier formId) {
         return FORMS.get(formId);
     }
 
     // 检查形态是否属于特定骑士
-    public static boolean isFormForRider(ResourceLocation formId, ResourceLocation riderId) {
-        Set<ResourceLocation> riderSet = FORM_TO_RIDERS.get(formId);
+    public static boolean isFormForRider(Identifier formId, Identifier riderId) {
+        Set<Identifier> riderSet = FORM_TO_RIDERS.get(formId);
         return riderSet != null && riderSet.contains(riderId);
     }
 
     // 获取形态的所有拥有者骑士
-    public static Set<ResourceLocation> getFormOwners(ResourceLocation formId) {
+    public static Set<Identifier> getFormOwners(Identifier formId) {
         return FORM_TO_RIDERS.getOrDefault(formId, Collections.emptySet());
     }
 
     // 获取骑士配置
-    public static RiderConfig getRider(ResourceLocation riderId) {
+    public static RiderConfig getRider(Identifier riderId) {
         return RIDERS.get(riderId);
     }
 

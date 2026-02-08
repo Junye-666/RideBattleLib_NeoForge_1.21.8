@@ -1,6 +1,6 @@
 package com.jpigeon.ridebattlelib.core.system.event;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.ICancellableEvent;
@@ -10,23 +10,23 @@ import net.neoforged.bus.api.ICancellableEvent;
  */
 public class HenshinEvent extends Event {
     private final Player player;
-    private final ResourceLocation riderId;
-    private final ResourceLocation formId;
+    private final Identifier riderId;
+    private final Identifier formId;
 
-    public HenshinEvent(Player player, ResourceLocation riderId, ResourceLocation formId) {
+    public HenshinEvent(Player player, Identifier riderId, Identifier formId) {
         this.player = player;
         this.riderId = riderId;
         this.formId = formId;
     }
 
     public static class Pre extends HenshinEvent implements ICancellableEvent {
-        public Pre(Player player, ResourceLocation riderId, ResourceLocation formId) {
+        public Pre(Player player, Identifier riderId, Identifier formId) {
             super(player, riderId, formId);
         }
     }
 
     public static class Post extends HenshinEvent {
-        public Post(Player player, ResourceLocation riderId, ResourceLocation formId) {
+        public Post(Player player, Identifier riderId, Identifier formId) {
             super(player, riderId, formId);
         }
     }
@@ -35,11 +35,11 @@ public class HenshinEvent extends Event {
         return player;
     }
 
-    public ResourceLocation getRiderId() {
+    public Identifier getRiderId() {
         return riderId;
     }
 
-    public ResourceLocation getFormId() {
+    public Identifier getFormId() {
         return formId;
     }
 }

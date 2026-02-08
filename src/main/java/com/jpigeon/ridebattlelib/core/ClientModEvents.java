@@ -27,6 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ClientModEvents {
     @SubscribeEvent
     public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
+        event.registerCategory(KeyBindings.RIDE_BATTLE_CATEGORY);
+
         event.register(KeyBindings.UNHENSHIN_KEY);
         event.register(KeyBindings.DRIVER_KEY);
         event.register(KeyBindings.RETURN_ITEMS_KEY);

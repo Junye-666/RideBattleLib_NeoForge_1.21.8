@@ -6,7 +6,7 @@ import com.jpigeon.ridebattlelib.core.system.form.FormConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderRegistry;
 import com.jpigeon.ridebattlelib.core.system.henshin.helper.TriggerType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -16,17 +16,17 @@ import net.minecraft.world.item.Items;
 import java.util.List;
 
 public class ExampleDynamicForm {
-    public static final ResourceLocation TEST_RIDER_BETA =
-            ResourceLocation.fromNamespaceAndPath(RideBattleLib.MODID, "test_beta");
+    public static final Identifier TEST_RIDER_BETA =
+            Identifier.fromNamespaceAndPath(RideBattleLib.MODID, "test_beta");
 
-    public static final ResourceLocation BETA_BASE_FORM =
-            ResourceLocation.fromNamespaceAndPath(RideBattleLib.MODID, "beta_base_form");
+    public static final Identifier BETA_BASE_FORM =
+            Identifier.fromNamespaceAndPath(RideBattleLib.MODID, "beta_base_form");
 
-    public static final ResourceLocation BETA_SLOT_1 =
-            ResourceLocation.fromNamespaceAndPath(RideBattleLib.MODID, "beta_slot_1");
+    public static final Identifier BETA_SLOT_1 =
+            Identifier.fromNamespaceAndPath(RideBattleLib.MODID, "beta_slot_1");
 
-    public static final ResourceLocation BETA_SLOT_2 =
-            ResourceLocation.fromNamespaceAndPath(RideBattleLib.MODID, "beta_slot_2");
+    public static final Identifier BETA_SLOT_2 =
+            Identifier.fromNamespaceAndPath(RideBattleLib.MODID, "beta_slot_2");
 
     public static final RiderConfig riderBeta = new RiderConfig(TEST_RIDER_BETA)
             .setMainDriverItem(Items.NETHERITE_LEGGINGS, EquipmentSlot.LEGS)
@@ -52,7 +52,7 @@ public class ExampleDynamicForm {
             .addRequiredItem(BETA_SLOT_1, Items.AIR)
             .addRequiredItem(BETA_SLOT_2, Items.AIR)
             .addAttribute(
-                    ResourceLocation.fromNamespaceAndPath("minecraft", "generic.max_health"),
+                    Identifier.fromNamespaceAndPath("minecraft", "generic.max_health"),
                     8.0,
                     AttributeModifier.Operation.ADD_VALUE);
 

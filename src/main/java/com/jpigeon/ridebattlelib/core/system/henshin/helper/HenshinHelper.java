@@ -13,7 +13,7 @@ import com.jpigeon.ridebattlelib.core.system.form.FormConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.HenshinSystem;
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderRegistry;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -31,10 +31,10 @@ public final class HenshinHelper implements IHenshinHelper {
     public static final ItemManager ITEM = new ItemManager();
 
     @Override
-    public void performHenshin(Player player, RiderConfig config, ResourceLocation formId) {
+    public void performHenshin(Player player, RiderConfig config, Identifier formId) {
         if (config == null || formId == null) return;
 
-        Map<ResourceLocation, ItemStack> driverItems = DriverSystem.INSTANCE.getDriverItems(player);
+        Map<Identifier, ItemStack> driverItems = DriverSystem.INSTANCE.getDriverItems(player);
         Map<EquipmentSlot, ItemStack> originalGear = ARMOR.saveOriginalGear(player, config);
 
         // 获取形态配置（支持动态形态）
@@ -76,19 +76,19 @@ public final class HenshinHelper implements IHenshinHelper {
     }
 
     @Override
-    public void performFormSwitch(Player player, ResourceLocation newFormId) {
+    public void performFormSwitch(Player player, Identifier newFormId) {
         HenshinSystem.TransformedData data = HenshinSystem.INSTANCE.getTransformedData(player);
         if (data == null) {
             RideBattleLib.LOGGER.error("无法获取变身数据");
             return;
         }
-        ResourceLocation oldFormId = data.formId();
+        Identifier oldFormId = data.formId();
         FormConfig newForm = RiderRegistry.getForm(player, newFormId);
         if (newForm == null) {
             newForm = DynamicFormConfig.getDynamicForm(newFormId);
         }
 
-        Map<ResourceLocation, ItemStack> currentDriver = DriverSystem.INSTANCE.getDriverItems(player);
+        Map<Identifier, ItemStack> currentDriver = DriverSystem.INSTANCE.getDriverItems(player);
         boolean needsUpdate = !newFormId.equals(oldFormId);
         if (newForm != null && needsUpdate) {
             if (newForm instanceof DynamicFormConfig dynamicForm) {
@@ -133,7 +133,7 @@ public final class HenshinHelper implements IHenshinHelper {
         }
     }
 
-    public void setTransformed(Player player, RiderConfig config, ResourceLocation formId, Map<EquipmentSlot, ItemStack> originalGear, Map<ResourceLocation, ItemStack> driverSnapshot) {
+    public void setTransformed(Player player, RiderConfig config, Identifier formId, Map<EquipmentSlot, ItemStack> originalGear, Map<Identifier, ItemStack> driverSnapshot) {
         if (config == null) return;
         RiderData oldData = player.getData(RiderAttachments.RIDER_DATA);
         if (Config.DEBUG_MODE.get()) {
@@ -162,9 +162,9 @@ public final class HenshinHelper implements IHenshinHelper {
     }
 
     @Override
-    public void saveTransformedSnapshot(Player player, RiderConfig config, ResourceLocation formId,
+    public void saveTransformedSnapshot(Player player, RiderConfig config, Identifier formId,
                                         Map<EquipmentSlot, ItemStack> originalGear,
-                                        Map<ResourceLocation, ItemStack> driverSnapshot) {
+                                        Map<Identifier, ItemStack> driverSnapshot) {
         if (config == null) return;
         RiderData oldData = player.getData(RiderAttachments.RIDER_DATA);
 

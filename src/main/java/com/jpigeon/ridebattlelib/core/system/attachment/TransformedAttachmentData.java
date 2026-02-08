@@ -2,27 +2,27 @@ package com.jpigeon.ridebattlelib.core.system.attachment;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Map;
 
 public record TransformedAttachmentData(
-        ResourceLocation riderId,
-        ResourceLocation formId,
+        Identifier riderId,
+        Identifier formId,
         Map<EquipmentSlot, ItemStack> originalGear,
-        Map<ResourceLocation, ItemStack> driverSnapshot
+        Map<Identifier, ItemStack> driverSnapshot
 ) {
     public static final Codec<TransformedAttachmentData> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    ResourceLocation.CODEC.fieldOf("riderId").forGetter(TransformedAttachmentData::riderId),
-                    ResourceLocation.CODEC.fieldOf("formId").forGetter(TransformedAttachmentData::formId),
+                    Identifier.CODEC.fieldOf("riderId").forGetter(TransformedAttachmentData::riderId),
+                    Identifier.CODEC.fieldOf("formId").forGetter(TransformedAttachmentData::formId),
 
                     Codec.unboundedMap(EquipmentSlot.CODEC, ItemStack.OPTIONAL_CODEC)
                             .fieldOf("originalGear").forGetter(TransformedAttachmentData::originalGear),
 
-                    Codec.unboundedMap(ResourceLocation.CODEC, ItemStack.OPTIONAL_CODEC)
+                    Codec.unboundedMap(Identifier.CODEC, ItemStack.OPTIONAL_CODEC)
                             .fieldOf("driverSnapshot").forGetter(TransformedAttachmentData::driverSnapshot)
             ).apply(instance, TransformedAttachmentData::new)
     );

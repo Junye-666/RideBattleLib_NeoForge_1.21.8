@@ -5,26 +5,26 @@ import com.jpigeon.ridebattlelib.core.system.network.handler.UUIDStreamCodec;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public record InsertItemPacket(UUID playerId, ResourceLocation slotId, ItemStack stack) implements CustomPacketPayload {
-    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RideBattleLib.MODID, "insert_item");
+public record InsertItemPacket(UUID playerId, Identifier slotId, ItemStack stack) implements CustomPacketPayload {
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(RideBattleLib.MODID, "insert_item");
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, InsertItemPacket> STREAM_CODEC = StreamCodec.composite(
+    public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull InsertItemPacket> STREAM_CODEC = StreamCodec.composite(
             UUIDStreamCodec.INSTANCE,
             InsertItemPacket::playerId,
-            ResourceLocation.STREAM_CODEC,
+            Identifier.STREAM_CODEC,
             InsertItemPacket::slotId,
             ItemStack.OPTIONAL_STREAM_CODEC,
             InsertItemPacket::stack,
             InsertItemPacket::new
     );
 
-    public static final Type<InsertItemPacket> TYPE = new Type<>(ID);
+    public static final Type<@NotNull InsertItemPacket> TYPE = new Type<>(ID);
 
     @Override
     public @NotNull Type<?> type() { return TYPE; }

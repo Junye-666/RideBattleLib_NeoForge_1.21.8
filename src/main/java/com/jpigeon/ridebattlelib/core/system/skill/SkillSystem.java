@@ -12,7 +12,7 @@ import com.jpigeon.ridebattlelib.core.system.henshin.HenshinSystem;
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderRegistry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.common.NeoForge;
@@ -23,26 +23,26 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class SkillSystem {
     // 只保留技能名称注册
-    private static final Map<ResourceLocation, Component> SKILL_DISPLAY_NAMES = new HashMap<>();
+    private static final Map<Identifier, Component> SKILL_DISPLAY_NAMES = new HashMap<>();
 
     // 技能冷却时间配置（毫秒）
-    private static final Map<ResourceLocation, Long> SKILL_COOLDOWN_MAP = new HashMap<>();
+    private static final Map<Identifier, Long> SKILL_COOLDOWN_MAP = new HashMap<>();
 
     // 玩家技能冷却记录
-    private static final Map<UUID, Map<ResourceLocation, Long>> PLAYER_SKILL_COOLDOWNS = new ConcurrentHashMap<>();
+    private static final Map<UUID, Map<Identifier, Long>> PLAYER_SKILL_COOLDOWNS = new ConcurrentHashMap<>();
 
     // ==================== 注册方法 ====================
 
-    public static void registerSkill(ResourceLocation skillId, Component displayName, int cooldownSeconds) {
+    public static void registerSkill(Identifier skillId, Component displayName, int cooldownSeconds) {
         registerSkillName(skillId, displayName);
         registerSkillCooldown(skillId, cooldownSeconds);
     }
 
-    private static void registerSkillName(ResourceLocation skillId, Component displayName) {
+    private static void registerSkillName(Identifier skillId, Component displayName) {
         SKILL_DISPLAY_NAMES.put(skillId, displayName);
     }
 
-    private static void registerSkillCooldown(ResourceLocation skillId, int cooldownSeconds) {
+    private static void registerSkillCooldown(Identifier skillId, int cooldownSeconds) {
         SKILL_COOLDOWN_MAP.put(skillId, (long) cooldownSeconds * 1000);
     }
 
@@ -53,7 +53,7 @@ public class SkillSystem {
      * @param player 玩家
      * @return 技能ID列表，无技能则返回空列表
      */
-    public static List<ResourceLocation> getCurrentFormSkills(Player player) {
+    public static List<Identifier> getCurrentFormSkills(Player player) {
         FormConfig formConfig = getActiveFormConfig(player);
         return formConfig != null ? formConfig.getSkillIds() : Collections.emptyList();
     }
@@ -89,7 +89,7 @@ public class SkillSystem {
      * @return 当前技能ID，无技能则返回null
      */
     @Nullable
-    public static ResourceLocation getCurrentSkillId(Player player) {
+    public static Identifier getCurrentSkillId(Player player) {
         FormConfig formConfig = getActiveFormConfig(player);
         if (formConfig == null) return null;
 
@@ -98,13 +98,13 @@ public class SkillSystem {
 
     // ==================== 冷却管理 ====================
 
-    public static int getSkillCooldown(ResourceLocation skillId) {
+    public static int getSkillCooldown(Identifier skillId) {
         Long cooldownMs = SKILL_COOLDOWN_MAP.get(skillId);
         return cooldownMs != null ? (int)(cooldownMs / 1000) : 0;
     }
 
-    public static boolean isSkillOnCooldown(Player player, ResourceLocation skillId) {
-        Map<ResourceLocation, Long> playerCooldowns = PLAYER_SKILL_COOLDOWNS.get(player.getUUID());
+    public static boolean isSkillOnCooldown(Player player, Identifier skillId) {
+        Map<Identifier, Long> playerCooldowns = PLAYER_SKILL_COOLDOWNS.get(player.getUUID());
         if (playerCooldowns == null) return false;
 
         Long cooldownEnd = playerCooldowns.get(skillId);
@@ -113,8 +113,8 @@ public class SkillSystem {
         return System.currentTimeMillis() < cooldownEnd;
     }
 
-    public static int getSkillRemainingCooldown(Player player, ResourceLocation skillId) {
-        Map<ResourceLocation, Long> playerCooldowns = PLAYER_SKILL_COOLDOWNS.get(player.getUUID());
+    public static int getSkillRemainingCooldown(Player player, Identifier skillId) {
+        Map<Identifier, Long> playerCooldowns = PLAYER_SKILL_COOLDOWNS.get(player.getUUID());
         if (playerCooldowns == null) return 0;
 
         Long cooldownEnd = playerCooldowns.get(skillId);
@@ -124,7 +124,7 @@ public class SkillSystem {
         return remaining > 0 ? (int)((remaining + 999) / 1000) : 0;
     }
 
-    public static void startSkillCooldown(Player player, ResourceLocation skillId) {
+    public static void startSkillCooldown(Player player, Identifier skillId) {
         Long cooldownMs = SKILL_COOLDOWN_MAP.get(skillId);
         if (cooldownMs == null || cooldownMs <= 0) return;
 
@@ -139,8 +139,8 @@ public class SkillSystem {
         }
     }
 
-    public static void clearSkillCooldown(Player player, ResourceLocation skillId) {
-        Map<ResourceLocation, Long> playerCooldowns = PLAYER_SKILL_COOLDOWNS.get(player.getUUID());
+    public static void clearSkillCooldown(Player player, Identifier skillId) {
+        Map<Identifier, Long> playerCooldowns = PLAYER_SKILL_COOLDOWNS.get(player.getUUID());
         if (playerCooldowns != null) {
             playerCooldowns.remove(skillId);
             if (playerCooldowns.isEmpty()) {
@@ -158,7 +158,7 @@ public class SkillSystem {
         }
     }
 
-    public static Component getDisplayName(ResourceLocation skillId) {
+    public static Component getDisplayName(Identifier skillId) {
         return SKILL_DISPLAY_NAMES.getOrDefault(skillId,
                 Component.literal(skillId.toString()));
     }
@@ -180,7 +180,7 @@ public class SkillSystem {
             return;
         }
 
-        ResourceLocation skillId = getCurrentSkillId(player);
+        Identifier skillId = getCurrentSkillId(player);
         if (skillId == null) {
             if (Config.DEBUG_MODE.get()) {
                 RideBattleLib.LOGGER.debug("触发技能失败: 无当前技能");
@@ -228,7 +228,7 @@ public class SkillSystem {
      * @param skillId 技能ID
      * @return 是否成功触发
      */
-    public static boolean triggerSkill(Player player, ResourceLocation skillId) {
+    public static boolean triggerSkill(Player player, Identifier skillId) {
         return triggerSkill(player, skillId, SkillEvent.SkillTriggerType.OTHER);
     }
 
@@ -239,7 +239,7 @@ public class SkillSystem {
      * @param type 触发类型
      * @return 是否成功触发
      */
-    public static boolean triggerSkill(Player player, ResourceLocation skillId, SkillEvent.SkillTriggerType type) {
+    public static boolean triggerSkill(Player player, Identifier skillId, SkillEvent.SkillTriggerType type) {
         if (!HenshinSystem.INSTANCE.isTransformed(player)) return false;
 
         HenshinSystem.TransformedData data = HenshinSystem.INSTANCE.getTransformedData(player);
@@ -256,8 +256,8 @@ public class SkillSystem {
      * @param type 触发类型
      * @return 是否成功触发
      */
-    public static boolean triggerSkill(Player player, ResourceLocation formId,
-                                       ResourceLocation skillId, SkillEvent.SkillTriggerType type) {
+    public static boolean triggerSkill(Player player, Identifier formId,
+                                       Identifier skillId, SkillEvent.SkillTriggerType type) {
         if (skillId == null) {
             if (Config.DEBUG_MODE.get()) {
                 RideBattleLib.LOGGER.debug("技能ID为空，无法触发");
@@ -295,8 +295,8 @@ public class SkillSystem {
     /**
      * 触发技能事件（核心方法，只负责事件分发）
      */
-    public static boolean triggerSkillEvent(Player player, ResourceLocation formId,
-                                            ResourceLocation skillId, SkillEvent.SkillTriggerType type) {
+    public static boolean triggerSkillEvent(Player player, Identifier formId,
+                                            Identifier skillId, SkillEvent.SkillTriggerType type) {
         if (Config.DEBUG_MODE.get()) {
             RideBattleLib.LOGGER.debug("触发技能事件: 玩家={}, 形态={}, 技能={}, 类型={}",
                     player.getName().getString(), formId, skillId, type);
@@ -351,7 +351,7 @@ public class SkillSystem {
             riderData.setCurrentSkillIndex(newIndex);
 
             // 获取新技能的ID
-            ResourceLocation newSkill = formConfig.getSkillIds().get(newIndex);
+            Identifier newSkill = formConfig.getSkillIds().get(newIndex);
             Component displayName = getDisplayName(newSkill);
 
             // 显示冷却信息

@@ -4,7 +4,7 @@ import com.jpigeon.ridebattlelib.core.system.event.ItemGrantEvent;
 import com.jpigeon.ridebattlelib.core.system.form.DynamicFormConfig;
 import com.jpigeon.ridebattlelib.core.system.form.FormConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderRegistry;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.NeoForge;
@@ -13,14 +13,14 @@ public class ItemManager {
     public static final ItemManager INSTANCE = new ItemManager();
 
 
-    public void grantFormItems(Player player, ResourceLocation formId) {
+    public void grantFormItems(Player player, Identifier formId) {
         FormConfig formConfig = getFormConfig(player, formId);
         if (formConfig != null) {
             grantFormItemsInternal(player, formConfig);
         }
     }
 
-    public void removeGrantedItems(Player player, ResourceLocation formId) {
+    public void removeGrantedItems(Player player, Identifier formId) {
         FormConfig formConfig = getFormConfig(player, formId);
         if (formConfig != null) {
             removeGrantedItemsInternal(player, formConfig);
@@ -67,7 +67,7 @@ public class ItemManager {
         }
     }
 
-    private FormConfig getFormConfig(Player player, ResourceLocation formId) {
+    private FormConfig getFormConfig(Player player, Identifier formId) {
         // 优先从玩家当前骑士获取
         FormConfig form = RiderRegistry.getForm(player, formId);
 
