@@ -1,4 +1,4 @@
-package com.jpigeon.ridebattlelib.core.system.network.handler;
+package com.jpigeon.ridebattlelib.core.system.network;
 
 import com.jpigeon.ridebattlelib.Config;
 import com.jpigeon.ridebattlelib.RideBattleLib;
@@ -10,15 +10,21 @@ import com.jpigeon.ridebattlelib.core.system.henshin.helper.SyncManager;
 import com.jpigeon.ridebattlelib.core.system.network.packet.*;
 import com.jpigeon.ridebattlelib.core.system.skill.SkillSystem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+
+import java.util.Optional;
 
 public class PacketHandler {
     public static void register(final RegisterPayloadHandlersEvent event) {
         event.registrar(RideBattleLib.MODID)
-                .versioned("1.0.6")
+                .versioned("1.0.7")
                 .playToServer(DriverActionPacket.TYPE, DriverActionPacket.STREAM_CODEC,
                         (payload, context) -> {
                             Player targetPlayer = context.player().level().getPlayerByUUID(payload.playerId());
@@ -137,6 +143,24 @@ public class PacketHandler {
                             if (targetPlayer != null) {
                                 SkillSystem.triggerCurrentSkill(targetPlayer);
                             }
+                        }
+                )
+                .playToServer(
+                        SoundPacket.TYPE,
+                        SoundPacket.STREAM_CODEC,
+                        (payload, context) -> {
+                            // 服务端处理
+                            ServerPlayer sender = (ServerPlayer) context.player();
+
+                            if (!sender.getUUID().equals(payload.playerId())) return;
+
+                            // 获取音效
+                            Optional<Holder.Reference<SoundEvent>> sound = BuiltInRegistries.SOUND_EVENT.get(payload.soundId());
+                            if (sound.isEmpty()) return;
+                            SoundEvent soundEvent = sound.get().value();
+
+                            // 服务端广播
+                            sender.level().playSound(null, sender, soundEvent, SoundSource.PLAYERS, payload.volume(), payload.pitch());
                         }
                 )
         ;
