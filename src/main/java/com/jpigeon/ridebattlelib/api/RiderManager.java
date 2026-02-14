@@ -590,7 +590,7 @@ public final class RiderManager {
                 volume,
                 pitch
         );
-        PacketDistributor.sendToServer(packet);
+        PacketDistributor.sendToAllPlayers(packet);
     }
 
     /**
