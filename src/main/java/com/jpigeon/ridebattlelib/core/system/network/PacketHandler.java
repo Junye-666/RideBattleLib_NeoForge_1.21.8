@@ -1,4 +1,4 @@
-package com.jpigeon.ridebattlelib.core.system.network.handler;
+package com.jpigeon.ridebattlelib.core.system.network;
 
 import com.jpigeon.ridebattlelib.Config;
 import com.jpigeon.ridebattlelib.RideBattleLib;
