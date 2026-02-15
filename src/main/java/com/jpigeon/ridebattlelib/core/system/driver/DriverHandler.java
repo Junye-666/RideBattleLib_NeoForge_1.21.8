@@ -182,13 +182,10 @@ public class DriverHandler {
         ItemStack from = event.getFrom();
         ItemStack to = event.getTo();
 
+        if (isRiderDriver(to)) return;
         // 如果试图移除驱动器
         if (isRiderDriver(from)) {
-            if (to.isEmpty()) {
-                RiderManager.unTransform(player);
-            } else {
-                if (!player.getInventory().add(to)) player.drop(to, false);
-            }
+            RiderManager.unTransform(player);
         }
     }
 
