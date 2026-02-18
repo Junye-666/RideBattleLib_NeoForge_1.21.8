@@ -9,10 +9,8 @@ import com.jpigeon.ridebattlelib.core.system.henshin.HenshinSystem;
 import com.jpigeon.ridebattlelib.core.system.henshin.helper.SyncManager;
 import com.jpigeon.ridebattlelib.core.system.network.packet.*;
 import com.jpigeon.ridebattlelib.core.system.skill.SkillSystem;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -24,7 +22,7 @@ import java.util.Optional;
 public class PacketHandler {
     public static void register(final RegisterPayloadHandlersEvent event) {
         event.registrar(RideBattleLib.MODID)
-                .versioned("1.0.8")
+                .versioned("1.0.9")
                 .playToServer(DriverActionPacket.TYPE, DriverActionPacket.STREAM_CODEC,
                         (payload, context) -> {
                             Player targetPlayer = context.player().level().getPlayerByUUID(payload.playerId());
@@ -164,18 +162,5 @@ public class PacketHandler {
                         }
                 )
         ;
-    }
-
-    public static void sendToServer(CustomPacketPayload packet) {
-        if (Minecraft.getInstance().getConnection() != null) {
-            Minecraft.getInstance().getConnection().send(packet);
-        }
-    }
-
-    public static void sendToClient(ServerPlayer player, CustomPacketPayload packet) {
-        if (packet instanceof HenshinStateSyncPacket && Config.DEBUG_MODE.get()){
-            RideBattleLib.LOGGER.debug("发送状态同步包");
-        }
-        player.connection.send(packet);
     }
 }
