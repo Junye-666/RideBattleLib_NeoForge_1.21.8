@@ -108,31 +108,6 @@ public final class HenshinHelper implements IHenshinHelper {
         }
     }
 
-    public void restoreTransformedState(Player player, TransformedAttachmentData attachmentData) {
-        RiderConfig config = RiderRegistry.getRider(attachmentData.riderId());
-        FormConfig formConfig = RiderRegistry.getForm(attachmentData.formId());
-
-        if (config != null && formConfig != null) {
-            // 恢复原始装备
-            ARMOR.restoreOriginalGear(player, new HenshinSystem.TransformedData(
-                    config,
-                    attachmentData.formId(),
-                    attachmentData.originalGear(),
-                    attachmentData.driverSnapshot()
-            ));
-
-            // 重新装备盔甲
-            ARMOR.equipArmor(player, formConfig);
-
-            // 重新应用属性
-            EFFECT_ATTRIBUTE.applyAttributesAndEffects(player, formConfig.getFormId());
-
-            // 更新变身状态
-            setTransformed(player, config, attachmentData.formId(),
-                    attachmentData.originalGear(), attachmentData.driverSnapshot());
-        }
-    }
-
     public void setTransformed(Player player, RiderConfig config, ResourceLocation formId, Map<EquipmentSlot, ItemStack> originalGear, Map<ResourceLocation, ItemStack> driverSnapshot) {
         if (config == null) return;
         RiderData oldData = player.getData(RiderAttachments.RIDER_DATA);
