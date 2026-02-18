@@ -6,7 +6,6 @@ import com.jpigeon.ridebattlelib.core.system.form.FormConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.HenshinSystem;
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.helper.TriggerType;
-import com.jpigeon.ridebattlelib.core.system.network.PacketHandler;
 import com.jpigeon.ridebattlelib.core.system.network.packet.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -17,6 +16,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Map;
 import java.util.UUID;
@@ -69,19 +69,19 @@ public class ClientModEvents {
                 if (Config.DEBUG_MODE.get()) {
                     RideBattleLib.LOGGER.debug("按键触发 - 玩家状态: 变身={}, 驱动器={}", HenshinSystem.INSTANCE.isTransformed(player), config.getRiderId());
                 }
-                PacketHandler.sendToServer(new DriverActionPacket(player.getUUID()));
+                PacketDistributor.sendToAllPlayers(new DriverActionPacket(player.getUUID()));
             }
         }
         if (KeyBindings.UNHENSHIN_KEY.consumeClick()) {
             if (Config.DEBUG_MODE.get()) {
                 RideBattleLib.LOGGER.debug("发送解除变身数据包");
             }
-            PacketHandler.sendToServer(new UnhenshinPacket(player.getUUID()));
+            PacketDistributor.sendToAllPlayers(new UnhenshinPacket(player.getUUID()));
         }
 
         if (KeyBindings.RETURN_ITEMS_KEY.consumeClick()) {
             // 触发物品返还
-            PacketHandler.sendToServer(new ReturnItemsPacket());
+            PacketDistributor.sendToAllPlayers(new ReturnItemsPacket());
         }
 
         if (KeyBindings.SKILL_KEY.consumeClick()) {
@@ -91,10 +91,10 @@ public class ClientModEvents {
             // 蹲下时切换技能，否则触发当前技能
             if (player.isShiftKeyDown()) {
                 if (!HenshinSystem.INSTANCE.isTransformed(player)) return;
-                PacketHandler.sendToServer(new RotateSkillPacket(player.getUUID()));
+                PacketDistributor.sendToAllPlayers(new RotateSkillPacket(player.getUUID()));
             } else {
                 if (!HenshinSystem.INSTANCE.isTransformed(player)) return;
-                PacketHandler.sendToServer(new TriggerSkillPacket(player.getUUID()));
+                PacketDistributor.sendToAllPlayers(new TriggerSkillPacket(player.getUUID()));
             }
         }
     }

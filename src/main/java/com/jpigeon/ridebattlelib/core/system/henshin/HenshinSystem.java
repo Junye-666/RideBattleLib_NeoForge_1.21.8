@@ -11,7 +11,6 @@ import com.jpigeon.ridebattlelib.core.system.event.*;
 import com.jpigeon.ridebattlelib.core.system.form.DynamicFormConfig;
 import com.jpigeon.ridebattlelib.core.system.form.FormConfig;
 import com.jpigeon.ridebattlelib.core.system.henshin.helper.*;
-import com.jpigeon.ridebattlelib.core.system.network.PacketHandler;
 import com.jpigeon.ridebattlelib.core.system.network.packet.HenshinStateSyncPacket;
 import com.jpigeon.ridebattlelib.core.system.penalty.PenaltySystem;
 import net.minecraft.ChatFormatting;
@@ -24,6 +23,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -70,7 +70,7 @@ public class HenshinSystem implements IHenshinSystem {
         // 同步状态
         if (player.level().isClientSide()) {
             // 客户端发送同步请求
-            PacketHandler.sendToServer(new HenshinStateSyncPacket(
+            PacketDistributor.sendToAllPlayers(new HenshinStateSyncPacket(
                     player.getUUID(),
                     HenshinState.TRANSFORMING,
                     formId
