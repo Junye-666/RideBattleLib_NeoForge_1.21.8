@@ -23,7 +23,7 @@ import java.util.Optional;
 public class PacketHandler {
     public static void register(final RegisterPayloadHandlersEvent event) {
         event.registrar(RideBattleLib.MODID)
-                .versioned("1.0.8")
+                .versioned("1.0.9")
                 .playToServer(DriverActionPacket.TYPE, DriverActionPacket.STREAM_CODEC,
                         (payload, context) -> {
                             Player targetPlayer = context.player().level().getPlayerByUUID(payload.playerId());
