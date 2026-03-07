@@ -6,7 +6,7 @@ import com.jpigeon.ridebattlelib.core.system.attachment.RiderAttachments;
 import com.jpigeon.ridebattlelib.core.system.attachment.RiderData;
 import com.jpigeon.ridebattlelib.core.system.driver.DriverSystem;
 import com.jpigeon.ridebattlelib.core.system.henshin.HenshinSystem;
-import com.jpigeon.ridebattlelib.core.system.henshin.helper.SyncManager;
+import com.jpigeon.ridebattlelib.core.system.henshin.helper.data.SyncManager;
 import com.jpigeon.ridebattlelib.core.system.network.packet.*;
 import com.jpigeon.ridebattlelib.core.system.skill.SkillSystem;
 import net.minecraft.core.Holder;
@@ -28,53 +28,53 @@ public class PacketHandler {
                         (payload, context) -> {
                             Player targetPlayer = context.player().level().getPlayerByUUID(payload.playerId());
                             if (targetPlayer != null) {
-                                HenshinSystem.INSTANCE.driverAction(targetPlayer);
+                                HenshinSystem.getInstance().driverAction(targetPlayer);
                             }
                         })
                 .playToServer(HenshinPacket.TYPE, HenshinPacket.STREAM_CODEC,
                         (payload, context) -> {
                             Player targetPlayer = context.player().level().getPlayerByUUID(payload.playerId());
                             if (targetPlayer != null) {
-                                HenshinSystem.INSTANCE.henshin(targetPlayer, payload.riderId());
+                                HenshinSystem.getInstance().henshin(targetPlayer, payload.riderId());
                             }
                         })
                 .playToServer(UnhenshinPacket.TYPE, UnhenshinPacket.STREAM_CODEC,
                         (payload, context) -> {
                             Player targetPlayer = context.player().level().getPlayerByUUID(payload.playerId());
                             if (targetPlayer != null) {
-                                HenshinSystem.INSTANCE.unHenshin(targetPlayer);
+                                HenshinSystem.getInstance().unHenshin(targetPlayer);
                             }
                         })
                 .playToServer(SwitchFormPacket.TYPE, SwitchFormPacket.STREAM_CODEC,
                         (payload, context) -> {
                             Player targetPlayer = context.player().level().getPlayerByUUID(payload.playerId());
                             if (targetPlayer != null) {
-                                HenshinSystem.INSTANCE.switchForm(context.player(), payload.formId());
+                                HenshinSystem.getInstance().switchForm(context.player(), payload.formId());
                             }
                         })
                 .playToClient(DriverDataSyncPacket.TYPE, DriverDataSyncPacket.STREAM_CODEC,
                         (payload, context) ->
-                                DriverSystem.INSTANCE.applySyncPacket(payload))
+                                DriverSystem.getInstance().applySyncPacket(payload))
                 .playToServer(InsertItemPacket.TYPE, InsertItemPacket.STREAM_CODEC,
                         (payload, context) -> {
                             Player targetPlayer = context.player().level().getPlayerByUUID(payload.playerId());
                             if (targetPlayer != null) {
-                                DriverSystem.INSTANCE.insertItem(targetPlayer, payload.slotId(), payload.stack());
+                                DriverSystem.getInstance().insertItem(targetPlayer, payload.slotId(), payload.stack());
                             }
                         })
                 .playToServer(ReturnItemsPacket.TYPE, ReturnItemsPacket.STREAM_CODEC,
                         (payload, context) ->
-                                DriverSystem.INSTANCE.returnItems(context.player()))
+                                DriverSystem.getInstance().returnItems(context.player()))
                 .playToServer(ExtractItemPacket.TYPE, ExtractItemPacket.STREAM_CODEC,
                         (payload, context) -> {
                             Player targetPlayer = context.player().level().getPlayerByUUID(payload.playerId());
                             if (targetPlayer != null) {
-                                DriverSystem.INSTANCE.extractItem(context.player(), payload.slotId());
+                                DriverSystem.getInstance().extractItem(context.player(), payload.slotId());
                             }
                         })
 
                 .playToClient(DriverDataDiffPacket.TYPE, DriverDataDiffPacket.STREAM_CODEC,
-                        (payload, context) -> DriverSystem.INSTANCE.applyDiffPacket(payload)
+                        (payload, context) -> DriverSystem.getInstance().applyDiffPacket(payload)
                 )
                 .playToClient(TransformedStatePacket.TYPE, TransformedStatePacket.STREAM_CODEC,
                         (payload, context) -> HenshinSystem.CLIENT_TRANSFORMED_CACHE.put(payload.playerId(), payload.isTransformed()))
@@ -83,7 +83,7 @@ public class PacketHandler {
                         {
                             Player target = context.player().level().getPlayerByUUID(payload.playerId());
                             if (target instanceof ServerPlayer serverPlayer) {
-                                SyncManager.INSTANCE.syncTransformedState(serverPlayer);
+                                SyncManager.getInstance().syncTransformedState(serverPlayer);
                             }
                         })
                 .playToServer(
@@ -105,7 +105,7 @@ public class PacketHandler {
                             }
                             // 同步给所有客户端
                             if (context.player() instanceof ServerPlayer serverPlayer) {
-                                SyncManager.INSTANCE.syncHenshinState(serverPlayer);
+                                SyncManager.getInstance().syncHenshinState(serverPlayer);
                             } else if (Config.DEBUG_MODE.get()){
                                 RideBattleLib.LOGGER.debug("玩家未连接: {}", player.getName().getString());
                             }

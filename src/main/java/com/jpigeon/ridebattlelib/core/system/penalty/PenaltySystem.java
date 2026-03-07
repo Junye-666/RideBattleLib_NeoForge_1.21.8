@@ -45,7 +45,7 @@ public class PenaltySystem implements IPenaltySystem {
     public static boolean shouldTriggerPenalty(Player player) {
         if (!Config.PENALTY_ENABLED.get()) return false;
         PenaltySystem instance = getInstance();
-        return HenshinSystem.INSTANCE.isTransformed(player) &&
+        return HenshinSystem.getInstance().isTransformed(player) &&
                 player.getHealth() <= instance.getPenaltyThreshold() &&
                 !instance.isInCooldown(player);
     }
@@ -55,7 +55,7 @@ public class PenaltySystem implements IPenaltySystem {
         if (player.level().isClientSide()) return;
 
         // 强制解除变身
-        HenshinSystem.INSTANCE.unHenshin(player);
+        HenshinSystem.getInstance().unHenshin(player);
 
         // 爆炸
         PenaltyEvent.Explosion explosion = new PenaltyEvent.Explosion(player);

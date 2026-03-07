@@ -11,6 +11,9 @@ import net.neoforged.neoforge.common.NeoForge;
 
 public class ItemManager {
     public static final ItemManager INSTANCE = new ItemManager();
+    public static ItemManager getInstance() {
+        return INSTANCE;
+    }
 
 
     public void grantFormItems(Player player, Identifier formId) {

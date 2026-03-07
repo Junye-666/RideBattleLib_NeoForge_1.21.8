@@ -2,6 +2,7 @@ package com.jpigeon.ridebattlelib.core.system.henshin.helper;
 
 import com.jpigeon.ridebattlelib.Config;
 import com.jpigeon.ridebattlelib.RideBattleLib;
+import com.jpigeon.ridebattlelib.api.HenshinContext;
 import com.jpigeon.ridebattlelib.api.RiderManager;
 import com.jpigeon.ridebattlelib.core.system.attachment.RiderAttachments;
 import com.jpigeon.ridebattlelib.core.system.attachment.RiderData;
@@ -9,6 +10,7 @@ import com.jpigeon.ridebattlelib.core.system.event.FormSwitchEvent;
 import com.jpigeon.ridebattlelib.core.system.event.HenshinEvent;
 import com.jpigeon.ridebattlelib.core.system.henshin.HenshinSystem;
 import com.jpigeon.ridebattlelib.core.system.henshin.RiderConfig;
+import com.jpigeon.ridebattlelib.core.system.henshin.helper.data.SyncManager;
 import com.jpigeon.ridebattlelib.core.system.network.packet.HenshinPacket;
 import com.jpigeon.ridebattlelib.core.system.network.packet.SwitchFormPacket;
 import net.minecraft.resources.Identifier;
@@ -89,7 +91,7 @@ public class DriverActionManager {
             RideBattleLib.LOGGER.debug("完成变身序列: player={}, form={}", player.getName().getString(), formId);
         }
 
-        if (!HenshinSystem.INSTANCE.isTransformed(player)) {
+        if (!HenshinSystem.getInstance().isTransformed(player)) {
             proceedHenshin(player, Objects.requireNonNull(RiderConfig.findActiveDriverConfig(player)));
         } else {
             proceedFormSwitch(player, formId);
@@ -103,7 +105,7 @@ public class DriverActionManager {
 
         // 同步状态
         if (player instanceof ServerPlayer serverPlayer) {
-            SyncManager.INSTANCE.syncHenshinState(serverPlayer);
+            HenshinContext.DATA_SYNC.syncHenshinState(serverPlayer);
         }
     }
 
@@ -117,7 +119,7 @@ public class DriverActionManager {
             data.setPendingFormId(null);
 
             if (player instanceof ServerPlayer serverPlayer) {
-                SyncManager.INSTANCE.syncHenshinState(serverPlayer);
+                HenshinContext.DATA_SYNC.syncHenshinState(serverPlayer);
             }
         }
     }

@@ -17,8 +17,8 @@ public class RespawnHandler {
 
         player.removeTag("penalty_cooldown");
 
-        if (HenshinSystem.INSTANCE.isTransformed(player)) {
-            HenshinSystem.INSTANCE.unHenshin(player);
+        if (HenshinSystem.getInstance().isTransformed(player)) {
+            HenshinSystem.getInstance().unHenshin(player);
         }
     }
 }

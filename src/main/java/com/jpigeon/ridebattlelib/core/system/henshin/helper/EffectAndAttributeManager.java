@@ -20,7 +20,10 @@ import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class EffectAndAttributeManager {
-    public static final EffectAndAttributeManager INSTANCE = new EffectAndAttributeManager();
+    private static final EffectAndAttributeManager INSTANCE = new EffectAndAttributeManager();
+    public static EffectAndAttributeManager getInstance() {
+        return INSTANCE;
+    }
 
     public void applyAttributesAndEffects(Player player, Identifier formId) {
         FormConfig form = getFormConfig(player, formId);

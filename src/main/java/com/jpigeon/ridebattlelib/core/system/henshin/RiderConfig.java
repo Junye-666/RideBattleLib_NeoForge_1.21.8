@@ -2,12 +2,14 @@ package com.jpigeon.ridebattlelib.core.system.henshin;
 
 import com.jpigeon.ridebattlelib.Config;
 import com.jpigeon.ridebattlelib.RideBattleLib;
+import com.jpigeon.ridebattlelib.api.IHenshinStrategy;
 import com.jpigeon.ridebattlelib.core.system.driver.DriverSlotDefinition;
 import com.jpigeon.ridebattlelib.core.system.driver.DriverSystem;
 import com.jpigeon.ridebattlelib.core.system.event.FindRiderConfigEvent;
 import com.jpigeon.ridebattlelib.core.system.event.FormOverrideEvent;
 import com.jpigeon.ridebattlelib.core.system.form.DynamicFormConfig;
 import com.jpigeon.ridebattlelib.core.system.form.FormConfig;
+import com.jpigeon.ridebattlelib.core.system.henshin.helper.data.TransformedData;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffect;
@@ -48,6 +50,7 @@ public class RiderConfig {
     private final List<AttributeModifier> baseAttributes = new ArrayList<>();
     private final List<MobEffectInstance> baseEffects = new ArrayList<>();
     private boolean allowDynamicForms = false;
+    private IHenshinStrategy strategy = new DefaultHenshinStrategy();
 
     /**
      * 初始化时需要传入骑士Id
@@ -178,6 +181,14 @@ public class RiderConfig {
         return this;
     }
 
+    /**
+     *  设置自定义变身逻辑
+     */
+    public RiderConfig setHenshinStrategy(IHenshinStrategy strategy) {
+        this.strategy = strategy;
+        return this;
+    }
+
     //====================内部方法====================
     // 形态匹配
     public Identifier matchForm(Player player, Map<Identifier, ItemStack> driverItems) {
@@ -305,8 +316,8 @@ public class RiderConfig {
         }
 
         // 方法1：首先检查玩家是否处于变身状态，从变身数据中获取配置
-        if (HenshinSystem.INSTANCE.isTransformed(player)) {
-            HenshinSystem.TransformedData transformedData = HenshinSystem.INSTANCE.getTransformedData(player);
+        if (HenshinSystem.getInstance().isTransformed(player)) {
+            TransformedData transformedData = HenshinSystem.getInstance().getTransformedData(player);
             if (transformedData != null) {
                 RiderConfig config = transformedData.config();
                 if (config != null) {
@@ -360,7 +371,7 @@ public class RiderConfig {
      * 快捷获取FormConfig
      */
     public FormConfig getActiveFormConfig(Player player) {
-        Map<Identifier, ItemStack> driverItems = DriverSystem.INSTANCE.getDriverItems(player);
+        Map<Identifier, ItemStack> driverItems = DriverSystem.getInstance().getDriverItems(player);
         Identifier formId = matchForm(player, driverItems);
 
         // 优先检查预设形态
@@ -444,8 +455,8 @@ public class RiderConfig {
 
     public boolean hasAuxDriverEquipped(Player player) {
         // 如果在变身状态，从变身数据中检查辅助驱动器
-        if (HenshinSystem.INSTANCE.isTransformed(player)) {
-            HenshinSystem.TransformedData transformedData = HenshinSystem.INSTANCE.getTransformedData(player);
+        if (HenshinSystem.getInstance().isTransformed(player)) {
+            TransformedData transformedData = HenshinSystem.getInstance().getTransformedData(player);
             if (transformedData != null && transformedData.config().getRiderId().equals(this.getRiderId())) {
                 // 检查变身时的驱动器快照中是否有辅助槽位物品
                 Map<Identifier, ItemStack> driverSnapshot = transformedData.driverSnapshot();
@@ -472,6 +483,10 @@ public class RiderConfig {
 
     public boolean allowsDynamicForms() {
         return allowDynamicForms;
+    }
+
+    public IHenshinStrategy getHenshinStrategy() {
+        return strategy;
     }
 
     public List<AttributeModifier> getBaseAttributes() {
