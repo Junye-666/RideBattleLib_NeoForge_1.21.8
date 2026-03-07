@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 @EventBusSubscriber(modid = RideBattleLib.MODID, value = Dist.CLIENT)
 public class ClientModEvents {
     @SubscribeEvent
@@ -65,7 +64,7 @@ public class ClientModEvents {
             FormConfig formConfig = config.getActiveFormConfig(player);
             if (formConfig != null && formConfig.getTriggerType() == TriggerType.KEY) {
                 if (Config.DEBUG_MODE.get()) {
-                    RideBattleLib.LOGGER.debug("按键触发 - 玩家状态: 变身={}, 驱动器={}", HenshinSystem.INSTANCE.isTransformed(player), config.getRiderId());
+                    RideBattleLib.LOGGER.debug("按键触发 - 玩家状态: 变身={}, 驱动器={}", HenshinSystem.getInstance().isTransformed(player), config.getRiderId());
                 }
                 PacketDistributor.sendToAllPlayers(new DriverActionPacket(player.getUUID()));
             }
@@ -88,10 +87,10 @@ public class ClientModEvents {
             }
             // 蹲下时切换技能，否则触发当前技能
             if (player.isShiftKeyDown()) {
-                if (!HenshinSystem.INSTANCE.isTransformed(player)) return;
+                if (!HenshinSystem.getInstance().isTransformed(player)) return;
                 PacketDistributor.sendToAllPlayers(new RotateSkillPacket(player.getUUID()));
             } else {
-                if (!HenshinSystem.INSTANCE.isTransformed(player)) return;
+                if (!HenshinSystem.getInstance().isTransformed(player)) return;
                 PacketDistributor.sendToAllPlayers(new TriggerSkillPacket(player.getUUID()));
             }
         }
