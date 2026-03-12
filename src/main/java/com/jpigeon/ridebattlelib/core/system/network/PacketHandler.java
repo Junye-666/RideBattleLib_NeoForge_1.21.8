@@ -7,6 +7,7 @@ import com.jpigeon.ridebattlelib.core.system.attachment.RiderAttachments;
 import com.jpigeon.ridebattlelib.core.system.attachment.RiderData;
 import com.jpigeon.ridebattlelib.core.system.driver.DriverSystem;
 import com.jpigeon.ridebattlelib.core.system.henshin.HenshinSystem;
+import com.jpigeon.ridebattlelib.core.system.henshin.helper.HenshinState;
 import com.jpigeon.ridebattlelib.core.system.network.packet.*;
 import com.jpigeon.ridebattlelib.core.system.skill.SkillSystem;
 import net.minecraft.core.Holder;
@@ -22,7 +23,7 @@ import java.util.Optional;
 public class PacketHandler {
     public static void register(final RegisterPayloadHandlersEvent event) {
         event.registrar(RideBattleLib.MODID)
-                .versioned("1.0.9")
+                .versioned("1.1.0")
                 .playToServer(DriverActionPacket.TYPE, DriverActionPacket.STREAM_CODEC,
                         (payload, context) -> {
                             Player targetPlayer = context.player().level().getPlayerByUUID(payload.playerId());
@@ -78,11 +79,7 @@ public class PacketHandler {
                 .playToClient(TransformedStatePacket.TYPE, TransformedStatePacket.STREAM_CODEC,
                         (payload, context) -> HenshinSystem.CLIENT_TRANSFORMED_CACHE.put(payload.playerId(), payload.isTransformed()))
                 .playToClient(HenshinStateSyncPacket.TYPE, HenshinStateSyncPacket.STREAM_CODEC,
-                        (payload, context) -> {
-                            if (context.player() instanceof ServerPlayer serverPlayer) {
-                                HenshinContext.DATA_SYNC.syncTransformedState(serverPlayer);
-                            }
-                        })
+                        (payload, context) -> HenshinSystem.CLIENT_TRANSFORMED_CACHE.put(payload.playerId(), payload.state() == HenshinState.TRANSFORMED)) // 根据状态设置
                 .playToServer(
                         SyncHenshinStatePacket.TYPE,
                         SyncHenshinStatePacket.STREAM_CODEC,

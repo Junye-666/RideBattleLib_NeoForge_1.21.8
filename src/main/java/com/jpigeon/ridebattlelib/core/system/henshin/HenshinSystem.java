@@ -213,7 +213,7 @@ public class HenshinSystem implements IHenshinSystem {
         }
         ResourceLocation oldFormId = data.formId();
 
-        config.getHenshinStrategy().performFormSwitch(player, newFormId);
+        config.getHenshinStrategy().performFormSwitch(player, data, newFormId);
 
         // 触发形态切换事件
         if (!newFormId.equals(oldFormId)) {
