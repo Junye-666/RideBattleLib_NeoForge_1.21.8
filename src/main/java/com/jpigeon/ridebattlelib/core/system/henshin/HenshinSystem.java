@@ -141,7 +141,7 @@ public class HenshinSystem implements IHenshinSystem {
                 RideBattleLib.LOGGER.debug("形态 {} 未注册，尝试作为动态形态处理", formId);
             }
             formConfig = DynamicFormConfig.getOrCreateDynamicForm(
-                    player, config, driverItems
+                    config, driverItems
             );
 
             // 确保formId一致性
