@@ -6,7 +6,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-
 @EventBusSubscriber(modid = RideBattleLib.MODID)
 public class Config
 {
@@ -14,6 +13,7 @@ public class Config
 
     public static final ModConfigSpec.BooleanValue PENALTY_ENABLED;
     public static final ModConfigSpec.IntValue PENALTY_THRESHOLD;
+    public static final ModConfigSpec.IntValue PENALTY_RESET_HEALTH;
     public static final ModConfigSpec.IntValue COOLDOWN_DURATION;
     public static final ModConfigSpec.IntValue EXPLOSION_POWER;
     public static final ModConfigSpec.IntValue KNOCKBACK_STRENGTH;
@@ -31,6 +31,9 @@ public class Config
                 .comment("触发吃瘪生命阈值")
                 .defineInRange("penaltyThreshold", 3, 1, 10);
 
+        PENALTY_RESET_HEALTH = BUILDER
+                .comment("吃瘪后恢复的血量")
+                .defineInRange("penaltyReset", 6, 1, 10);
         // 冷却时间（秒，默认30秒）
         COOLDOWN_DURATION = BUILDER
                 .comment("吃瘪冷却(秒)")
@@ -71,9 +74,10 @@ public class Config
     {
         if (Config.DEBUG_MODE.get()){
             RideBattleLib.LOGGER.debug(
-                    "Loaded config: penaltyEnabled={}, penaltyThreshold={}, cooldown={}s, explosionPower={}, knockbackStrength={}, keyCooldown={}, interactionCooldown={}, debugMode={}, developerMode={}",
+                    "Loaded config: penaltyEnabled={}, penaltyThreshold={}, penaltyReset = {}, cooldown={}s, explosionPower={}, knockbackStrength={}, keyCooldown={}, interactionCooldown={}, debugMode={}, developerMode={}",
                     PENALTY_ENABLED.get(),
                     PENALTY_THRESHOLD.get(),
+                    PENALTY_RESET_HEALTH.get(),
                     COOLDOWN_DURATION.get(),
                     EXPLOSION_POWER.get(),
                     KNOCKBACK_STRENGTH.get(),
