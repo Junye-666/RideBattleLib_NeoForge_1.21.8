@@ -1,11 +1,11 @@
 package com.jpigeon.ridebattlelib;
 
-import com.jpigeon.ridebattlelib.core.system.attachment.AttachmentHandler;
-import com.jpigeon.ridebattlelib.core.system.attachment.RiderAttachments;
-import com.jpigeon.ridebattlelib.core.system.driver.DriverHandler;
-import com.jpigeon.ridebattlelib.core.system.henshin.helper.CountdownManager;
-import com.jpigeon.ridebattlelib.core.system.network.PacketHandler;
-import com.jpigeon.ridebattlelib.core.system.penalty.PenaltyHandler;
+import com.jpigeon.ridebattlelib.common.data.RiderAttachments;
+import com.jpigeon.ridebattlelib.common.network.PacketHandler;
+import com.jpigeon.ridebattlelib.server.handler.AttachmentHandler;
+import com.jpigeon.ridebattlelib.server.handler.DriverHandler;
+import com.jpigeon.ridebattlelib.server.handler.PenaltyHandler;
+import com.jpigeon.ridebattlelib.server.system.helper.CountdownManager;
 import com.mojang.logging.LogUtils;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
