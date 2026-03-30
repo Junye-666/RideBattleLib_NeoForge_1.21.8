@@ -70,7 +70,6 @@ public class HenshinUtils {
     public static void restoreTransformedState(Player player, HenshinSessionData data) {
         if (data == null) return;
 
-        RiderConfig config = RiderRegistry.getRider(data.riderId());
         ResourceLocation formId = data.formId();
 
         // 恢复原始装备
