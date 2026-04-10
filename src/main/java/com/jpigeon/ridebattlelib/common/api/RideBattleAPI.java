@@ -359,10 +359,7 @@ public class RideBattleAPI {
      * 快捷检查变身状态
      */
     public static boolean isTransformed(Player player) {
-        if (player.level().isClientSide()) {
-            return ClientTransformedCache.isTransformed(player.getUUID());
-        }
-        return HenshinUtils.isTransformed(player);
+        return ClientTransformedCache.isTransformed(player.getUUID()) || HenshinUtils.isTransformed(player);
     }
 
     /**
