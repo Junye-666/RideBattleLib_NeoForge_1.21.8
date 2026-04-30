@@ -38,6 +38,21 @@ public final class ClientDriverDataCache {
         }
     }
 
+    public static Map<Identifier, ItemStack> getDriverItems(UUID playerId) {
+        // 主驱动器
+        Map<Identifier, ItemStack> main = getMainItems(playerId);
+        Map<Identifier, ItemStack> all = new HashMap<>(main);
+
+        // 辅助驱动器（仅当装备时）
+        Map<Identifier, ItemStack> aux = getAuxItems(playerId);
+        if (!aux.isEmpty()) {
+            all.putAll(aux);
+        }
+
+        return all;
+    }
+
+
     public static Map<Identifier, ItemStack> getMainItems(UUID playerId) {
         return MAIN_ITEMS.getOrDefault(playerId, new HashMap<>());
     }
